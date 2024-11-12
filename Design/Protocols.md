@@ -51,7 +51,7 @@ Here are the protocols for the client and server communication.
 |   0  | Success                      |
 | 1001 | Authentication failed        |
 | 1002 | User already exists          |
-| 1003 | Service unavailable          |
+| 1003 | Server error                 |
 
 ## Login
 - Flow: 
@@ -86,7 +86,7 @@ Here are the protocols for the client and server communication.
 | 2001 | Invalid credentials          |
 | 2002 | User already logged in       |
 | 2003 | User not found               |
-| 2004 | Server internal error        |
+| 2004 | Server error                 |
 # Friends Management
 ## Friend Request
 - Flow: 
@@ -124,7 +124,7 @@ Here are the protocols for the client and server communication.
 |-------|------------------------------|
 | 0     | Success                      |
 | 3001  | User not found               |
-| 3002  | Server internal error        |
+| 3002  | Server error                 |
 ### Message Type: FRIEND_REQUEST_RESPONSE
 ```json
 {
@@ -284,7 +284,7 @@ Here are the protocols for the client and server communication.
   "payload": {
     "sender": "user123",
     "group": "Group Chat 1",
-    "code": 0 // Acknowledged
+    "code": 0
   }
 }
 ```

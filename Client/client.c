@@ -8,13 +8,18 @@
 #include <pthread.h>
 
 #define MAXLINE 4096
-#define DEFAULT_PORT 3000
+#define DEFAULT_PORT 4000
 
 int sockfd;
+GtkWidget *login_window;
+GtkWidget *message_window;
 GtkWidget *text_view;
 GtkWidget *entry;
+GtkWidget *username_entry;
+GtkWidget *password_entry;
 GtkTextTag *left_tag;
 char client_address[INET_ADDRSTRLEN];
+char username[50];
 
 void printUsage(const char *progname) {
     fprintf(stderr, "Usage: %s <IP address> <port>\n", progname);
@@ -43,9 +48,19 @@ void *receive_messages(void *arg) {
         gtk_text_buffer_get_end_iter(buffer, &end);
 
         // Check if the message is from the client itself
-        if (strncmp(buf, client_address, strlen(client_address)) == 0) {
-            gtk_text_buffer_insert_with_tags(buffer, &end, "You: ", -1, left_tag, NULL);
-            gtk_text_buffer_insert(buffer, &end, buf + strlen(client_address) + 2, -1);
+        char *colon_pos = strchr(buf, ':');
+        if (colon_pos != NULL) {
+            *colon_pos = '\0';
+            const char *sender = buf;
+            const char *message = colon_pos + 2;
+
+            if (strcmp(sender, client_address) == 0) {
+                gtk_text_buffer_insert_with_tags(buffer, &end, "You: ", -1, left_tag, NULL);
+            } else {
+                gtk_text_buffer_insert_with_tags(buffer, &end, sender, -1, left_tag, NULL);
+                gtk_text_buffer_insert(buffer, &end, ": ", -1);
+            }
+            gtk_text_buffer_insert(buffer, &end, message, -1);
         } else {
             gtk_text_buffer_insert_with_tags(buffer, &end, buf, -1, left_tag, NULL);
         }
@@ -78,6 +93,58 @@ void send_message(GtkWidget *widget, gpointer data) {
     gtk_text_buffer_insert(buffer, &end, "\n", -1);
 
     gtk_entry_set_text(GTK_ENTRY(entry), "");
+}
+
+void authenticate(GtkWidget *widget, gpointer data) {
+    const gchar *username_text = gtk_entry_get_text(GTK_ENTRY(username_entry));
+    const gchar *password_text = gtk_entry_get_text(GTK_ENTRY(password_entry));
+    char buf[MAXLINE];
+
+    snprintf(buf, sizeof(buf), "LOGIN %s %s", username_text, password_text);
+    if (send(sockfd, buf, strlen(buf), 0) < 0) {
+        perror("Error sending login message");
+        return;
+    }
+
+    int n = recv(sockfd, buf, MAXLINE, 0);
+    if (n <= 0) {
+        perror("Error receiving login response");
+        return;
+    }
+    buf[n] = '\0';
+
+    if (strcmp(buf, "LOGIN_SUCCESS\n") == 0) {
+        strcpy(username, username_text);
+        gtk_widget_hide(login_window);
+        gtk_widget_show_all(message_window);
+    } else {
+        printf("Login failed.\n");
+    }
+}
+
+void register_user(GtkWidget *widget, gpointer data) {
+    const gchar *username_text = gtk_entry_get_text(GTK_ENTRY(username_entry));
+    const gchar *password_text = gtk_entry_get_text(GTK_ENTRY(password_entry));
+    char buf[MAXLINE];
+
+    snprintf(buf, sizeof(buf), "REGISTER %s %s", username_text, password_text);
+    if (send(sockfd, buf, strlen(buf), 0) < 0) {
+        perror("Error sending register message");
+        return;
+    }
+
+    int n = recv(sockfd, buf, MAXLINE, 0);
+    if (n <= 0) {
+        perror("Error receiving register response");
+        return;
+    }
+    buf[n] = '\0';
+
+    if (strcmp(buf, "REGISTER_SUCCESS\n") == 0) {
+        printf("Registration successful. Please log in.\n");
+    } else {
+        printf("Registration failed.\n");
+    }
 }
 
 int main(int argc, char **argv) {
@@ -117,17 +184,44 @@ int main(int argc, char **argv) {
 
     gtk_init(&argc, &argv);
 
-    GtkWidget *window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-    gtk_window_set_title(GTK_WINDOW(window), "Chat Client");
-    gtk_window_set_default_size(GTK_WINDOW(window), 400, 300);
-    g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
+    // Create login window
+    login_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+    gtk_window_set_title(GTK_WINDOW(login_window), "Login/Register");
+    gtk_window_set_default_size(GTK_WINDOW(login_window), 400, 200);
+    g_signal_connect(login_window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
 
-    GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
-    gtk_container_add(GTK_CONTAINER(window), vbox);
+    GtkWidget *login_vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+    gtk_container_add(GTK_CONTAINER(login_window), login_vbox);
+
+    username_entry = gtk_entry_new();
+    gtk_entry_set_placeholder_text(GTK_ENTRY(username_entry), "Username");
+    gtk_box_pack_start(GTK_BOX(login_vbox), username_entry, FALSE, FALSE, 0);
+
+    password_entry = gtk_entry_new();
+    gtk_entry_set_placeholder_text(GTK_ENTRY(password_entry), "Password");
+    gtk_entry_set_visibility(GTK_ENTRY(password_entry), FALSE);
+    gtk_box_pack_start(GTK_BOX(login_vbox), password_entry, FALSE, FALSE, 0);
+
+    GtkWidget *login_button = gtk_button_new_with_label("Login");
+    gtk_box_pack_start(GTK_BOX(login_vbox), login_button, FALSE, FALSE, 0);
+    g_signal_connect(login_button, "clicked", G_CALLBACK(authenticate), NULL);
+
+    GtkWidget *register_button = gtk_button_new_with_label("Register");
+    gtk_box_pack_start(GTK_BOX(login_vbox), register_button, FALSE, FALSE, 0);
+    g_signal_connect(register_button, "clicked", G_CALLBACK(register_user), NULL);
+
+    // Create message window
+    message_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+    gtk_window_set_title(GTK_WINDOW(message_window), "Chat Client");
+    gtk_window_set_default_size(GTK_WINDOW(message_window), 400, 300);
+    g_signal_connect(message_window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
+
+    GtkWidget *message_vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+    gtk_container_add(GTK_CONTAINER(message_window), message_vbox);
 
     text_view = gtk_text_view_new();
     gtk_text_view_set_editable(GTK_TEXT_VIEW(text_view), FALSE);
-    gtk_box_pack_start(GTK_BOX(vbox), text_view, TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(message_vbox), text_view, TRUE, TRUE, 0);
 
     // Create a text tag for left alignment
     GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(text_view));
@@ -137,15 +231,17 @@ int main(int argc, char **argv) {
     gtk_text_tag_table_add(tag_table, left_tag);
 
     entry = gtk_entry_new();
-    gtk_box_pack_start(GTK_BOX(vbox), entry, FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(message_vbox), entry, FALSE, FALSE, 0);
 
     GtkWidget *send_button = gtk_button_new_with_label("Send");
-    gtk_box_pack_start(GTK_BOX(vbox), send_button, FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(message_vbox), send_button, FALSE, FALSE, 0);
     g_signal_connect(send_button, "clicked", G_CALLBACK(send_message), NULL);
+
+    gtk_widget_show_all(login_window);
+    gtk_widget_hide(message_window);
 
     pthread_create(&recv_thread, NULL, receive_messages, NULL);
 
-    gtk_widget_show_all(window);
     gtk_main();
 
     pthread_join(recv_thread, NULL);

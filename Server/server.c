@@ -6,17 +6,28 @@
 #include <unistd.h>
 #include <string.h>
 #include <pthread.h>
+#include <stdbool.h>
 
 #define MAXLINE 4096    /* max text line length */
-#define SERV_PORT 3000  /* port */
+#define SERV_PORT 4000  /* port */
 #define LISTENQ 8       /* maximum number of client connections */
 #define MAXCLIENTS 100  /* maximum number of clients */
+
+typedef struct {
+    char username[50];
+    char password[50];
+} User;
+
+User users[MAXCLIENTS];
+int user_count = 0;
 
 int client_sockets[MAXCLIENTS];
 int client_count = 0;
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
 void *handle_client(void *arg);
+bool authenticate_user(const char *username, const char *password);
+bool register_user(const char *username, const char *password);
 
 int main(int argc, char **argv)
 {
@@ -82,6 +93,27 @@ int main(int argc, char **argv)
     return 0;
 }
 
+bool authenticate_user(const char *username, const char *password) {
+    for (int i = 0; i < user_count; i++) {
+        if (strcmp(users[i].username, username) == 0 && strcmp(users[i].password, password) == 0) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool register_user(const char *username, const char *password) {
+    for (int i = 0; i < user_count; i++) {
+        if (strcmp(users[i].username, username) == 0) {
+            return false; // Username already exists
+        }
+    }
+    strcpy(users[user_count].username, username);
+    strcpy(users[user_count].password, password);
+    user_count++;
+    return true;
+}
+
 void *handle_client(void *arg)
 {
     int connfd = *(int *)arg;
@@ -96,6 +128,35 @@ void *handle_client(void *arg)
     inet_ntop(AF_INET, &addr.sin_addr, client_address, INET_ADDRSTRLEN);
 
     printf("Child thread created for client requests\n");
+
+    // Authentication loop
+    while (1) {
+        n = recv(connfd, buf, MAXLINE, 0);
+        if (n <= 0) {
+            close(connfd);
+            pthread_exit(NULL);
+        }
+        buf[n] = '\0';
+
+        char *command = strtok(buf, " ");
+        char *username = strtok(NULL, " ");
+        char *password = strtok(NULL, " ");
+
+        if (strcmp(command, "REGISTER") == 0) {
+            if (register_user(username, password)) {
+                send(connfd, "REGISTER_SUCCESS\n", 17, 0);
+            } else {
+                send(connfd, "REGISTER_FAIL\n", 14, 0);
+            }
+        } else if (strcmp(command, "LOGIN") == 0) {
+            if (authenticate_user(username, password)) {
+                send(connfd, "LOGIN_SUCCESS\n", 14, 0);
+                break;
+            } else {
+                send(connfd, "LOGIN_FAIL\n", 11, 0);
+            }
+        }
+    }
 
     while ((n = recv(connfd, buf, MAXLINE, 0)) > 0)
     {

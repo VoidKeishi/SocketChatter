@@ -14,6 +14,7 @@ int sockfd;
 GtkWidget *text_view;
 GtkWidget *entry;
 GtkTextTag *left_tag;
+char client_address[INET_ADDRSTRLEN];
 
 void printUsage(const char *progname) {
     fprintf(stderr, "Usage: %s <IP address> <port>\n", progname);
@@ -40,7 +41,14 @@ void *receive_messages(void *arg) {
         gdk_threads_enter();
         buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(text_view));
         gtk_text_buffer_get_end_iter(buffer, &end);
-        gtk_text_buffer_insert_with_tags(buffer, &end, buf, -1, left_tag, NULL);
+
+        // Check if the message is from the client itself
+        if (strncmp(buf, client_address, strlen(client_address)) == 0) {
+            gtk_text_buffer_insert_with_tags(buffer, &end, "You: ", -1, left_tag, NULL);
+            gtk_text_buffer_insert(buffer, &end, buf + strlen(client_address) + 2, -1);
+        } else {
+            gtk_text_buffer_insert_with_tags(buffer, &end, buf, -1, left_tag, NULL);
+        }
         gtk_text_buffer_insert(buffer, &end, "\n", -1);
         gdk_threads_leave();
     }
@@ -65,7 +73,8 @@ void send_message(GtkWidget *widget, gpointer data) {
     GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(text_view));
     GtkTextIter end;
     gtk_text_buffer_get_end_iter(buffer, &end);
-    gtk_text_buffer_insert_with_tags(buffer, &end, message, -1, left_tag, NULL);
+    gtk_text_buffer_insert_with_tags(buffer, &end, "You: ", -1, left_tag, NULL);
+    gtk_text_buffer_insert(buffer, &end, message, -1);
     gtk_text_buffer_insert(buffer, &end, "\n", -1);
 
     gtk_entry_set_text(GTK_ENTRY(entry), "");
@@ -99,6 +108,12 @@ int main(int argc, char **argv) {
         exit(EXIT_FAILURE);
     }
     printf("Connected to the server successfully.\n");
+
+    // Get the client's address
+    struct sockaddr_in addr;
+    socklen_t addr_len = sizeof(addr);
+    getsockname(sockfd, (struct sockaddr *)&addr, &addr_len);
+    inet_ntop(AF_INET, &addr.sin_addr, client_address, INET_ADDRSTRLEN);
 
     gtk_init(&argc, &argv);
 

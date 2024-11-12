@@ -87,13 +87,24 @@ void *handle_client(void *arg)
     int connfd = *(int *)arg;
     char buf[MAXLINE];
     int n;
+    struct sockaddr_in addr;
+    socklen_t addr_len = sizeof(addr);
+
+    // Get the client's address
+    getpeername(connfd, (struct sockaddr *)&addr, &addr_len);
+    char client_address[INET_ADDRSTRLEN];
+    inet_ntop(AF_INET, &addr.sin_addr, client_address, INET_ADDRSTRLEN);
 
     printf("Child thread created for client requests\n");
 
     while ((n = recv(connfd, buf, MAXLINE, 0)) > 0)
     {
         buf[n] = '\0';
-        printf("Message received from client: %s", buf);
+        printf("Message received from client %s: %s", client_address, buf);
+
+        // Prepend the sender's address to the message
+        char message_with_sender[MAXLINE + INET_ADDRSTRLEN + 2];
+        snprintf(message_with_sender, sizeof(message_with_sender), "%s: %s", client_address, buf);
 
         // Broadcast the message to all other clients
         pthread_mutex_lock(&mutex);
@@ -101,7 +112,7 @@ void *handle_client(void *arg)
         {
             if (client_sockets[i] != connfd)
             {
-                send(client_sockets[i], buf, n, 0);
+                send(client_sockets[i], message_with_sender, strlen(message_with_sender), 0);
             }
         }
         pthread_mutex_unlock(&mutex);
@@ -109,7 +120,7 @@ void *handle_client(void *arg)
 
     if (n == 0)
     {
-        printf("Client disconnected.\n");
+        printf("Client %s disconnected.\n", client_address);
     }
     else if (n < 0)
     {

@@ -8,11 +8,12 @@
 #include <pthread.h>
 
 #define MAXLINE 4096
-#define DEFAULT_PORT 4000
+#define DEFAULT_PORT 3000
 
 int sockfd;
 GtkWidget *text_view;
 GtkWidget *entry;
+GtkTextTag *left_tag;
 
 void printUsage(const char *progname) {
     fprintf(stderr, "Usage: %s <IP address> <port>\n", progname);
@@ -39,7 +40,7 @@ void *receive_messages(void *arg) {
         gdk_threads_enter();
         buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(text_view));
         gtk_text_buffer_get_end_iter(buffer, &end);
-        gtk_text_buffer_insert(buffer, &end, buf, -1);
+        gtk_text_buffer_insert_with_tags(buffer, &end, buf, -1, left_tag, NULL);
         gtk_text_buffer_insert(buffer, &end, "\n", -1);
         gdk_threads_leave();
     }
@@ -59,6 +60,14 @@ void send_message(GtkWidget *widget, gpointer data) {
     if (send(sockfd, message, strlen(message), 0) < 0) {
         perror("Error sending message");
     }
+
+    // Display the sent message in the text view
+    GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(text_view));
+    GtkTextIter end;
+    gtk_text_buffer_get_end_iter(buffer, &end);
+    gtk_text_buffer_insert_with_tags(buffer, &end, message, -1, left_tag, NULL);
+    gtk_text_buffer_insert(buffer, &end, "\n", -1);
+
     gtk_entry_set_text(GTK_ENTRY(entry), "");
 }
 
@@ -104,6 +113,13 @@ int main(int argc, char **argv) {
     text_view = gtk_text_view_new();
     gtk_text_view_set_editable(GTK_TEXT_VIEW(text_view), FALSE);
     gtk_box_pack_start(GTK_BOX(vbox), text_view, TRUE, TRUE, 0);
+
+    // Create a text tag for left alignment
+    GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(text_view));
+    GtkTextTagTable *tag_table = gtk_text_buffer_get_tag_table(buffer);
+    left_tag = gtk_text_tag_new("left_align");
+    g_object_set(left_tag, "justification", GTK_JUSTIFY_LEFT, NULL);
+    gtk_text_tag_table_add(tag_table, left_tag);
 
     entry = gtk_entry_new();
     gtk_box_pack_start(GTK_BOX(vbox), entry, FALSE, FALSE, 0);

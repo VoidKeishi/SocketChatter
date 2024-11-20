@@ -489,60 +489,103 @@ Here are the protocols for the client and server communication.
   }
 }
 ```
-# Contact History
-## Contact History
+# Message History Sync
 - Flow:
-    1. Client sends a `CONTACT_HISTORY_REQUEST` message to the server.
-    2. Server processes the request and sends a `CONTACT_HISTORY_RESPONSE` message back to the client with the contact history.
+  1. Client needs to authenticate before requesting message history.
+  2. Client sends a `MESSAGE_HISTORY_REQUEST` message to the server.
+  3. Server processes the request and sends a `MESSAGE_HISTORY_RESPONSE` message back to the client.
+    - If the request is valid and history exists, the server sends a `MESSAGE_HISTORY_BEGIN` message to the client.
+    - If the request is invalid or no history exists, the server sends a `MESSAGE_HISTORY_RESPONSE` message with an error code.
+  4. Upon receiving the `MESSAGE_HISTORY_BEGIN` message, the client acknowledges it.
+  5. Server begins sending `MESSAGE_HISTORY_DATA` messages, each containing a chunk of the message history.
+  6. Client acknowledges each `MESSAGE_HISTORY_DATA` message.
+  7. After all `MESSAGE_HISTORY_DATA` messages are sent, the server sends a `MESSAGE_HISTORY_COMPLETE` message to the client.
+  8. Client acknowledges the `MESSAGE_HISTORY_COMPLETE` message.
 
-### Message Type: CONTACT_HISTORY_REQUEST
+### Message Type: MESSAGE_HISTORY_REQUEST
 ```json
 {
-    "type": "CONTACT_HISTORY_REQUEST",
-    "timestamp": 1630000023,
-    "payload": {
-        "username": "user123"
-    }
+  "type": "MESSAGE_HISTORY_REQUEST",
+  "timestamp": 1630000023,
+  "payload": {
+  "username": "user123"
+  }
 }
 ```
 
-### Message Type: CONTACT_HISTORY_RESPONSE
+### Message Type: MESSAGE_HISTORY_RESPONSE
 #### Success
 ```json
 {
-    "type": "CONTACT_HISTORY_RESPONSE",
-    "timestamp": 1630000024,
-    "payload": {
-        "success": true,
-        "contacts": [
-            {
-                "username": "user456",
-                "status": "online"
-            },
-            {
-                "username": "user789",
-                "status": "offline"
-            }
-        ],
-        "code": 0 // Success
-    }
+  "type": "MESSAGE_HISTORY_RESPONSE",
+  "timestamp": 1630000024,
+  "payload": {
+  "username": "user123",
+  "code": 0 // Success
+  }
 }
 ```
 
 #### Failure
 ```json
 {
-    "type": "CONTACT_HISTORY_RESPONSE",
-    "timestamp": 1630000024,
-    "payload": {
-        "success": false,
-        "code": 6001 // Failed to retrieve contact history
-    }
+  "type": "MESSAGE_HISTORY_RESPONSE",
+  "timestamp": 1630000024,
+  "payload": {
+  "username": "user123",
+  "code": 6001 // No history found
+  }
 }
 ```
 
+### Message Type: MESSAGE_HISTORY_BEGIN
+```json
+{
+  "type": "MESSAGE_HISTORY_BEGIN",
+  "timestamp": 1630000025,
+  "payload": {
+  "username": "user123",
+  "code": 0 // Handshake initiated
+  }
+}
+```
 
+### Message Type: MESSAGE_HISTORY_DATA
+```json
+{
+  "type": "MESSAGE_HISTORY_DATA",
+  "timestamp": 1630000026,
+  "payload": {
+  "username": "user123",
+  "messages": [
+    {
+    "timestamp": 1630000001,
+    "sender": "user123",
+    "receiver": "user456",
+    "content": "Hello!"
+    },
+    {
+    "timestamp": 1630000002,
+    "sender": "user456",
+    "receiver": "user123",
+    "content": "Hi there!"
+    }
+  ]
+  }
+}
+```
 
+### Message Type: MESSAGE_HISTORY_COMPLETE
+```json
+{
+  "type": "MESSAGE_HISTORY_COMPLETE",
+  "timestamp": 1630000027,
+  "payload": {
+  "username": "user123",
+  "code": 0 // Transfer complete
+  }
+}
+```
 
 
 

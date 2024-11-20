@@ -8,7 +8,7 @@
 #include <pthread.h>
 
 #define MAXLINE 4096
-#define DEFAULT_PORT 4000
+#define DEFAULT_PORT 3000
 
 int sockfd;
 GtkWidget *login_window;

@@ -9,7 +9,7 @@
 #include <stdbool.h>
 
 #define MAXLINE 4096    /* max text line length */
-#define SERV_PORT 4000  /* port */
+#define SERV_PORT 3000  /* port */
 #define LISTENQ 8       /* maximum number of client connections */
 #define MAXCLIENTS 100  /* maximum number of clients */
 
@@ -31,7 +31,7 @@ bool register_user(const char *username, const char *password);
 
 int main(int argc, char **argv)
 {
-    int listenfd, connfd;
+    int listenfd, *connfd;
     socklen_t clilen;
     struct sockaddr_in cliaddr, servaddr;
 
@@ -67,9 +67,11 @@ int main(int argc, char **argv)
     {
         clilen = sizeof(cliaddr);
         // Accept a connection
-        if ((connfd = accept(listenfd, (struct sockaddr *)&cliaddr, &clilen)) < 0)
+        connfd = malloc(sizeof(int));
+        if ((*connfd = accept(listenfd, (struct sockaddr *)&cliaddr, &clilen)) < 0)
         {
             perror("Accept error");
+            free(connfd);
             continue;
         }
 
@@ -79,13 +81,14 @@ int main(int argc, char **argv)
 
         // Add client socket to the list
         pthread_mutex_lock(&mutex);
-        client_sockets[client_count++] = connfd;
+        client_sockets[client_count++] = *connfd;
         pthread_mutex_unlock(&mutex);
 
         // Create a thread to handle the client
-        if (pthread_create(&tid, NULL, &handle_client, (void *)&connfd) != 0)
+        if (pthread_create(&tid, NULL, &handle_client, (void *)connfd) != 0)
         {
             perror("Thread creation error");
+            free(connfd);
             continue;
         }
     }
@@ -117,6 +120,7 @@ bool register_user(const char *username, const char *password) {
 void *handle_client(void *arg)
 {
     int connfd = *(int *)arg;
+    free(arg);
     char buf[MAXLINE];
     int n;
     struct sockaddr_in addr;

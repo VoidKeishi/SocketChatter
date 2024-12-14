@@ -8,30 +8,67 @@ This document outlines the code structure for the ChattingApp project. The appli
 ChattingApp/
 ├── Client/
 │   ├── src/
-│   │   ├── main.cpp
-│   │   ├── ChatWindow.cpp
-│   │   ├── ChatWindow.h
-│   │   ├── Message.cpp
-│   │   ├── Message.h
-│   │   ├── User.cpp
-│   │   ├── User.h
-│   ├── qml/
-│   │   ├── main.qml
-│   │   ├── ChatWindow.qml
-├── Server/
-│   ├── src/
-│   │   ├── main.cpp
-│   │   ├── Server.cpp
-│   │   ├── Server.h
-│   │   ├── User.cpp
-│   │   ├── User.h
-│   │   ├── Group.cpp
-│   │   ├── Group.h
-│   │   ├── Message.cpp
-│   │   ├── Message.h
-├── README.md
-├── Design/
-│   ├── CodeStructure.md
-│   ├── Database.md
-│   ├── Protocols.md
+│   │   ├── controllers/
+│   │   │   ├── ChatController.h
+│   │   │   ├── ChatController.cpp
+│   │   │   ├── FriendController.h
+│   │   │   ├── FriendController.cpp
+│   │   │   ├── GroupController.h
+│   │   │   ├── GroupController.cpp
+│   │   │   ├── LoginController.h
+│   │   │   └── LoginController.cpp
+│   │   ├── models/
+│   │   │   ├── GroupModel.h
+│   │   │   ├── GroupModel.cpp
+│   │   │   ├── MessageModel.h
+│   │   │   ├── MessageModel.cpp
+│   │   │   ├── UserModel.h
+│   │   │   └── UserModel.cpp
+│   │   ├── views/
+│   │   │   ├── ChatView.h
+│   │   │   ├── ChatView.cpp
+│   │   │   ├── FriendListView.h
+│   │   │   ├── FriendListView.cpp
+│   │   │   ├── GroupView.h
+│   │   │   ├── GroupView.cpp
+│   │   │   ├── LoginView.h
+│   │   │   └── LoginView.cpp
+│   │   ├── network/
+│   │   │   ├── NetworkManager.h
+│   │   │   └── NetworkManager.cpp
+│   │   ├── utils/
+│   │   │   ├── JsonParser.h
+│   │   │   └── JsonParser.cpp
+│   │   ├── resources/
+│   │   │   └── (resource files such as images, icons)
+│   │   └── main.cpp
+│   └── CMakeLists.txt
+└── Server/
+    ├── src/
+    │   ├── controllers/
+    │   │   ├── ClientHandler.h
+    │   │   ├── ClientHandler.cpp
+    │   │   ├── ServerController.h
+    │   │   └── ServerController.cpp
+    │   ├── models/
+    │   │   ├── GroupModel.h
+    │   │   ├── GroupModel.cpp
+    │   │   ├── MessageModel.h
+    │   │   ├── MessageModel.cpp
+    │   │   ├── UserModel.h
+    │   │   └── UserModel.cpp
+    │   ├── network/
+    │   │   ├── ProtocolHelper.h
+    │   │   └── ProtocolHelper.cpp
+    │   ├── database/
+    │   │   ├── DatabaseManager.h
+    │   │   └── DatabaseManager.cpp
+    │   ├── utils/
+    │   │   ├── Logger.h
+    │   │   └── Logger.cpp
+    │   ├── threads/
+    │   │   ├── ClientThread.h
+    │   │   └── ClientThread.cpp
+    │   └── main.cpp
+    └── CMakeLists.txt
 ```

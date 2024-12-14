@@ -1,6 +1,37 @@
 # Chatting App Database Design
 
-## Tables
+## Client Database
+### LocalContacts
+| Column Name | Data Type | Constraints          |
+|-------------|-----------|----------------------|
+| contact_id  | INT       | PRIMARY KEY         |
+| user_id     | INT       | NOT NULL            |
+| username    | VARCHAR   | NOT NULL            |
+| last_seen   | TIMESTAMP | NULL                |
+| avatar_path | VARCHAR   | NULL                |
+| sync_status | INT       | DEFAULT 1           |
+
+### LocalConversations
+| Column Name     | Data Type | Constraints          |
+|-----------------|-----------|----------------------|
+| conversation_id | INT       | PRIMARY KEY         |
+| contact_id      | INT       | FOREIGN KEY         |
+| last_message    | TEXT      | NULL                |
+| unread_count    | INT       | DEFAULT 0           |
+| last_updated    | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP |
+| sync_status     | INT       | DEFAULT 1           |
+
+### LocalMessages
+| Column Name     | Data Type | Constraints          |
+|-----------------|-----------|----------------------|
+| message_id      | INT       | PRIMARY KEY         |
+| conversation_id | INT       | FOREIGN KEY         |
+| content         | TEXT      | NOT NULL            |
+| sent_at         | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP |
+| is_sent        | BOOLEAN   | DEFAULT FALSE        |
+| sync_status    | INT       | DEFAULT 1           |
+
+## Server Database
 
 ### Users
 | Column Name | Data Type | Constraints          |

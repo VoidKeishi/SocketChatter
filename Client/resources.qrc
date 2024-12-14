@@ -1,0 +1,30 @@
+<RCC>
+    <qresource prefix="/">
+        <file>src/views/AuthWindow.qml</file>
+        <file>src/views/MainWindow.qml</file>
+        <file>src/views/ContactPage.qml</file>
+        <file>src/views/ConversationPage.qml</file>
+        <file>src/views/ManageContactsPage.qml</file>
+    </qresource>
+    <qresource prefix="/">
+        <file>src/views/assets/man0.png</file>
+        <file>src/views/assets/man1.png</file>
+        <file>src/views/assets/man2.png</file>
+        <file>src/views/assets/man3.png</file>
+        <file>src/views/assets/man4.png</file>
+        <file>src/views/assets/woman0.png</file>
+        <file>src/views/assets/woman1.png</file>
+        <file>src/views/assets/woman2.png</file>
+        <file>src/views/assets/woman3.png</file>
+        <file>src/views/assets/woman4.png</file>
+        <file>src/views/assets/ChatIcon.png</file>
+        <file>src/views/assets/person.png</file>
+        <file>src/views/assets/person_outline.png</file>
+        <file>src/views/assets/person_add.png</file>
+        <file>src/views/assets/arrow_back.png</file>
+        <file>src/views/assets/delete.png</file>
+        <file>src/views/assets/check_circle.png</file>
+        <file>src/views/assets/remove_circle.png</file>
+        <file>src/views/assets/cancel.png</file>
+    </qresource>
+</RCC>

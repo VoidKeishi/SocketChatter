@@ -1,0 +1,8 @@
+{
+    "payload": {
+        "receiver": "keishi1",
+        "sender": "keishi"
+    },
+    "timestamp": "2024-11-26T00:30:52",
+    "type": "FRIEND_REQUEST"
+}

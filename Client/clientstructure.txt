@@ -1,0 +1,43 @@
+src
+├── controllers
+│   ├── auth
+│   │   ├── LoginController.cpp
+│   │   ├── LoginController.h
+│   │   ├── RegisterController.cpp
+│   │   └── RegisterController.h
+│   ├── ControllerManager.cpp
+│   ├── ControllerManager.h
+│   └── network
+│       ├── NetworkController.cpp
+│       ├── NetworkController.h
+│       ├── RequestManager.cpp
+│       ├── RequestManager.h
+│       ├── ResponseManager.cpp
+│       └── ResponseManager.h
+├── helper
+│   ├── MessageSerializer.cpp
+│   └── MessageSerializer.h
+├── main.cpp
+├── models
+│   ├── ContactModel.cpp
+│   ├── ContactModel.h
+│   ├── ConversationModel.cpp
+│   └── ConversationModel.h
+└── views
+    ├── assets
+    │   ├── ChatIcon.png
+    │   ├── man0.png
+    │   ├── man1.png
+    │   ├── man2.png
+    │   ├── man3.png
+    │   ├── man4.png
+    │   ├── woman0.png
+    │   ├── woman1.png
+    │   ├── woman2.png
+    │   ├── woman3.png
+    │   └── woman4.png
+    ├── AuthWindow.qml
+    ├── ContactPage.qml
+    ├── ConversationPage.qml
+    ├── MainWindow.qml
+    └── ManageContactsPage.qml

@@ -1,0 +1,10 @@
+#ifndef LOGGINGCATEGORIES_H
+#define LOGGINGCATEGORIES_H
+
+#include <QLoggingCategory>
+
+Q_DECLARE_LOGGING_CATEGORY(authController)
+Q_DECLARE_LOGGING_CATEGORY(networkController)
+Q_DECLARE_LOGGING_CATEGORY(contactsController)
+
+#endif // LOGGINGCATEGORIES_H

@@ -79,7 +79,7 @@ ApplicationWindow {
                     Layout.fillWidth: true
                     Material.background: Material.Purple
                     onClicked: {
-                        loginController.handleLoginRequest(usernameField.text, passwordField.text)
+                        authController.handleLoginRequest(usernameField.text, passwordField.text)
                     }
                 }
             }
@@ -133,7 +133,7 @@ ApplicationWindow {
                     Material.background: Material.Purple
                     enabled: regPasswordField.text === regConfirmPasswordField.text
                     onClicked: {
-                        registerController.handleRegisterRequest(regUsernameField.text, regPasswordField.text)
+                        authController.handleRegisterRequest(regUsernameField.text, regPasswordField.text)
                     }
                 }
             }
@@ -141,7 +141,7 @@ ApplicationWindow {
     }
 
     Connections {
-        target: loginController
+        target: authController
         function onLoginResult(success, message) {
             if (success) {
                 var component = Qt.createComponent("qrc:/src/views/MainWindow.qml")
@@ -163,7 +163,7 @@ ApplicationWindow {
     }
 
     Connections {
-        target: registerController
+        target: authController
         function onRegisterResult(success, message) {
             if (success) {
                 bar.currentIndex = 0

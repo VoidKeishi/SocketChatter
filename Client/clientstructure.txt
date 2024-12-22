@@ -1,36 +1,55 @@
-src
 ├── controllers
 │   ├── auth
-│   │   ├── LoginController.cpp
-│   │   ├── LoginController.h
-│   │   ├── RegisterController.cpp
-│   │   └── RegisterController.h
+│   │   ├── AuthController.cpp
+│   │   └── AuthController.h
+│   ├── contacts
+│   │   ├── ContactsController.cpp
+│   │   └── ContactsController.h
 │   ├── ControllerManager.cpp
 │   ├── ControllerManager.h
-│   └── network
-│       ├── NetworkController.cpp
-│       ├── NetworkController.h
-│       ├── RequestManager.cpp
-│       ├── RequestManager.h
-│       ├── ResponseManager.cpp
-│       └── ResponseManager.h
-├── helper
-│   ├── MessageSerializer.cpp
-│   └── MessageSerializer.h
+│   ├── network
+│   │   ├── NetworkController.cpp
+│   │   ├── NetworkController.h
+│   │   ├── ResponseDispatcher.cpp
+│   │   └── ResponseDispatcher.h
+│   ├── session
+│   │   ├── UserManager.cpp
+│   │   └── UserManager.h
+│   └── utils
+│       ├── HashUtility.h
+│       ├── LoggingCategories.cpp
+│       ├── LoggingCategories.h
+│       └── RequestFactory.h
+├── database
+│   ├── DatabaseManager.cpp
+│   ├── DatabaseManager.h
+│   └── schema.sql
 ├── main.cpp
 ├── models
-│   ├── ContactModel.cpp
-│   ├── ContactModel.h
-│   ├── ConversationModel.cpp
-│   └── ConversationModel.h
+│   ├── contacts
+│   │   ├── FriendListModel.cpp
+│   │   ├── FriendListModel.h
+│   │   ├── ReceivedRequestModel.cpp
+│   │   ├── ReceivedRequestModel.h
+│   │   ├── SentRequestModel.cpp
+│   │   └── SentRequestModel.h
+│   └── conversations
 └── views
     ├── assets
+    │   ├── arrow_back.png
+    │   ├── cancel.png
     │   ├── ChatIcon.png
+    │   ├── check_circle.png
+    │   ├── delete.png
     │   ├── man0.png
     │   ├── man1.png
     │   ├── man2.png
     │   ├── man3.png
     │   ├── man4.png
+    │   ├── person_add.png
+    │   ├── person_outline.png
+    │   ├── person.png
+    │   ├── remove_circle.png
     │   ├── woman0.png
     │   ├── woman1.png
     │   ├── woman2.png
@@ -40,4 +59,6 @@ src
     ├── ContactPage.qml
     ├── ConversationPage.qml
     ├── MainWindow.qml
-    └── ManageContactsPage.qml
+    ├── ManageContactsPage.qml
+    ├── WindowManager.cpp
+    └── WindowManager.h

@@ -34,58 +34,66 @@ ApplicationWindow {
             border.width: 1
             border.color: "#333333"
 
-            Loader {
-                id: contactLoader
+            ContactPage {
+                id: contactPage
                 anchors.fill: parent
-                sourceComponent: ContactPage {
-                    onContactClicked: (contactName) => {
-                        conversationLoader.sourceComponent = undefined
-                        conversationLoader.setSource("ConversationPage.qml", { inConversationWith: contactName })
-                        conversationLoader.visible = true
-                        manageContactsLoader.visible = false
-                    }
-                    onNavigateToManageContacts: () => {
-                        manageContactsLoader.setSource("ManageContactsPage.qml")
-                        manageContactsLoader.visible = true
-                        conversationLoader.visible = false
-                    }
+
+                onContactClicked: function(contactName) {
+                    // Update the conversation page
+                    conversationPage.inConversationWith = contactName
+                    conversationPage.visible = true
+                    manageContactsPage.visible = false
+                    welcomeMessage.visible = false
+                }
+
+                onNavigateToManageContacts: function() {
+                    // Show manage contacts page
+                    manageContactsPage.visible = true
+                    conversationPage.visible = false
+                    welcomeMessage.visible = false
                 }
             }
+        }
+
+        // Separator line
+        Rectangle {
+            width: 1
+            Layout.fillHeight: true
+            color: "#333333"
         }
 
         // Conversation area (right panel)
         Rectangle {
             Layout.fillWidth: true
             Layout.fillHeight: true
-            color: "#1E1E1E"
+            color: Material.background
 
-            Loader {
-                id: conversationLoader
+            // Include the ConversationPage component
+            ConversationPage {
+                id: conversationPage
                 anchors.fill: parent
                 visible: false // Initially hidden
+                property string inConversationWith
             }
 
-            // Manage Contacts area
-            Loader {
-                id: manageContactsLoader
+            // Include the ManageContactsPage component
+            ManageContactsPage {
+                id: manageContactsPage
                 anchors.fill: parent
                 visible: false // Initially hidden
-                onLoaded: {
-                    if (item && item.navigateBack) {
-                        item.navigateBack.connect(function() {
-                            manageContactsLoader.visible = false
-                            manageContactsLoader.sourceComponent = undefined
-                            conversationLoader.visible = false
-                        })
-                    }
+
+                onNavigateBack: function() {
+                    manageContactsPage.visible = false
+                    welcomeMessage.visible = true
                 }
             }
 
             // Welcome message when no conversation is open and manage contacts is not open
             Column {
+                id: welcomeMessage
                 anchors.centerIn: parent
                 spacing: 20
-                visible: !conversationLoader.item && !manageContactsLoader.item
+                visible: true
 
                 Image {
                     source: "qrc:/src/views/assets/ChatIcon.png"

@@ -1,5 +1,6 @@
 #include "NetworkController.h"
 #include <QDebug>
+#include <QJsonDocument>
 
 NetworkController* NetworkController::m_instance = nullptr;
 
@@ -27,6 +28,11 @@ void NetworkController::connectToServer(const QString &host, quint16 port) {
     }
 }
 
+void NetworkController::onConnected() {
+    qDebug() << "Connected to server";
+    emit connected();
+}
+
 void NetworkController::sendData(const QByteArray &data) {
     if (socket->state() == QAbstractSocket::ConnectedState) {
         socket->write(data);
@@ -36,18 +42,27 @@ void NetworkController::sendData(const QByteArray &data) {
     }
 }
 
-void NetworkController::onConnected() {
-    qDebug() << "Connected to server";
-    emit connected();
-}
-
 void NetworkController::onReadyRead() {
     buffer.append(socket->readAll());
-    int index;
-    while ((index = buffer.indexOf('\n')) != -1) {
-        QByteArray data = buffer.left(index);
-        buffer.remove(0, index + 1);
-        emit dataReceived(data);
+    int startIndex = 0;
+
+    while ((startIndex = buffer.indexOf('{', startIndex)) != -1) {
+        int endIndex = buffer.indexOf('\n', startIndex);
+        if (endIndex == -1) break;  // No complete line yet
+
+        QByteArray jsonData = buffer.mid(startIndex, endIndex - startIndex);
+        
+        // Validate JSON
+        QJsonParseError error;
+        QJsonDocument::fromJson(jsonData, &error);
+        
+        if (error.error == QJsonParseError::NoError) {
+            emit rawDataReceived(jsonData);
+            buffer.remove(0, endIndex + 1);
+            startIndex = 0;  // Reset for next search
+        } else {
+            startIndex = endIndex + 1;  // Try next JSON object
+        }
     }
 }
 

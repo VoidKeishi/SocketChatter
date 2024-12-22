@@ -1,88 +1,88 @@
 #include "ControllerManager.h"
+#include "network/NetworkController.h"
 #include <QDebug>
 
 ControllerManager::ControllerManager(QObject *parent) : QObject(parent) {
-    loginController = new LoginController(this);
-    registerController = new RegisterController(this);
-    manageContactsController = new ManageContactsController(this);
+        // Instantiate Controllers
+        authController = new AuthController(this);
+        contactsController = new ContactsController(this);
+
+        // Instantiate Models
+        friendListModel = new FriendListModel(this);
+        sentRequestModel = new SentRequestModel(this);
+        receivedRequestModel = new ReceivedRequestModel(this);
+
+        // Instantiate ResponseDispatcher
+        responseDispatcher = new ResponseDispatcher(this);
+
+        // Get the singleton instance of NetworkController
+        networkController = NetworkController::instance();
+}
+
+ControllerManager* ControllerManager::instance() {
+        if (!m_instance) {
+                m_instance = new ControllerManager(nullptr);
+        }
+        return m_instance;
 }
 
 void ControllerManager::initControllers() {
+        // =========================================
+        // 1. Connect NetworkController to ResponseDispatcher
+        // =========================================
+        connect(networkController, &NetworkController::rawDataReceived,
+                        responseDispatcher, &ResponseDispatcher::onRawDataReceived);
 
-    QObject::connect(loginController, &LoginController::loginResult, [=](bool success, QString message) {
-        if (!success) {
-            qDebug() << "Login failed:" << message;
-            return;
-        }
-        qDebug() << "Login successful!";
-    });
+        // =========================================
+        // 2. Connect ResponseDispatcher to AuthController
+        // =========================================
+        connect(responseDispatcher, &ResponseDispatcher::loginResponseReceived,
+                        authController, &AuthController::onLoginResponse);
+        connect(responseDispatcher, &ResponseDispatcher::registerResponseReceived,
+                        authController, &AuthController::onRegisterResponse);
 
-    QObject::connect(registerController, &RegisterController::registerResult, [=](bool success, QString message) {
-        if (!success) {
-            qDebug() << "Registration failed:" << message;
-            return;
-        }
-        qDebug() << "Registration successful!";
-    });
+        // =========================================
+        // 3. Connect ResponseDispatcher to ContactsController
+        // =========================================
+        connect(responseDispatcher, &ResponseDispatcher::friendRequestSentResponse,
+                        contactsController, &ContactsController::handleFriendRequestSent);
+        connect(responseDispatcher, &ResponseDispatcher::friendRequestCanceledResponse,
+                        contactsController, &ContactsController::handleFriendRequestCanceled);
+        connect(responseDispatcher, &ResponseDispatcher::friendRequestResponse,
+                        contactsController, &ContactsController::handleFriendRequestResponse);
+        connect(responseDispatcher, &ResponseDispatcher::friendsListFetchedResponse,
+                        contactsController, &ContactsController::handleFriendsListFetched);
 
-    QObject::connect(manageContactsController, &ManageContactsController::friendRequestSent, 
-                     [=](bool success, QString message) {
-        if (!success) {
-            qDebug() << "Friend request failed:" << message;
-            // Handle failure (e.g., show error message in UI)
-            return;
-        }
-        qDebug() << "Friend request sent successfully!";
-        // Handle success (e.g., update UI)
-    });
+        // =========================================
+        // 4. Connect Controllers' Send Signals to NetworkController's sendData
+        // =========================================
+        // AuthController Signals
+        connect(authController, &AuthController::loginRequest,
+                        networkController, &NetworkController::sendData);
+        connect(authController, &AuthController::registerRequest,
+                        networkController, &NetworkController::sendData);
 
-    QObject::connect(manageContactsController, &ManageContactsController::friendRequestCanceled, 
-                     [=](bool success, QString message) {
-        if (!success) {
-            qDebug() << "Cancel friend request failed:" << message;
-            // Handle failure
-            return;
-        }
-        qDebug() << "Friend request canceled successfully!";
-        // Handle success
-    });
+        // ContactsController Signals
+        connect(contactsController, &ContactsController::sendAddFriend,
+                        networkController, &NetworkController::sendData);
+        connect(contactsController, &ContactsController::sendCancelFriend,
+                        networkController, &NetworkController::sendData);
+        connect(contactsController, &ContactsController::sendRespondToFriend,
+                        networkController, &NetworkController::sendData);
+        connect(contactsController, &ContactsController::sendDeleteFriend,
+                        networkController, &NetworkController::sendData);
+        connect(contactsController, &ContactsController::sendFetchFriends,
+                        networkController, &NetworkController::sendData);
 
-    QObject::connect(manageContactsController, &ManageContactsController::friendRequestAccepted, 
-                     [=](bool success, QString message) {
-        if (!success) {
-            qDebug() << "Accept friend request failed:" << message;
-            // Handle failure
-            return;
-        }
-        qDebug() << "Friend request accepted successfully!";
-        // Handle success
-    });
-
-    QObject::connect(manageContactsController, &ManageContactsController::friendRequestRejected, 
-                     [=](bool success, QString message) {
-        if (!success) {
-            qDebug() << "Reject friend request failed:" << message;
-            // Handle failure
-            return;
-        }
-        qDebug() << "Friend request rejected successfully!";
-        // Handle success
-    });
-
-    QObject::connect(manageContactsController, &ManageContactsController::friendDeleted, 
-                     [=](bool success, QString message) {
-        if (!success) {
-            qDebug() << "Delete friend failed:" << message;
-            // Handle failure
-            return;
-        }
-        qDebug() << "Friend deleted successfully!";
-        // Handle success
-    });
-
-    QObject::connect(manageContactsController, &ManageContactsController::friendsListFetched, 
-                     [=](const QStringList &friends) {
-        qDebug() << "Fetched friends list:" << friends;
-        // Update UI with the friends list
-    });
+        // =========================================
+        // 5. Connect ContactsController signals to models
+        // =========================================
+        connect(contactsController, &ContactsController::friendsListResult,
+                        friendListModel, &FriendListModel::updateFriendsList);
+                        
+        connect(contactsController, &ContactsController::addFriendResult,
+                        sentRequestModel, &SentRequestModel::onFriendRequestSent);
+                        
+        connect(contactsController, &ContactsController::friendResponseResult,
+                        receivedRequestModel, &ReceivedRequestModel::onFriendRequestResponse);
 }

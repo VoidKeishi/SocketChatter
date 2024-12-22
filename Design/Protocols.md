@@ -31,7 +31,7 @@ Here are the protocols for the client and server communication.
   "timestamp": 1630000000,
   "payload": {
     "username": "user123",
-    "passwordHash": "hashed_password"
+    "password": "hashed_password"
   }
 }
 ```

@@ -1,0 +1,28 @@
+src/
+├── core
+│   ├── ClientHandler.cpp
+│   ├── ClientHandler.h
+│   ├── RequestDispatcher.cpp
+│   ├── RequestDispatcher.h
+│   ├── ServerController.cpp
+│   └── ServerController.h
+├── database
+│   ├── DatabaseManager.cpp
+│   └── DatabaseManager.h
+├── handlers
+│   ├── AuthHandler.cpp
+│   ├── AuthHandler.h
+│   ├── BaseHandler.cpp
+│   ├── BaseHandler.h
+│   ├── ContactHandler.cpp
+│   ├── ContactHandler.h
+│   ├── MessageHandler.cpp
+│   └── MessageHandler.h
+├── main.cpp
+├── repositories
+│   ├── ContactRepository.h
+│   ├── GroupRepository.h
+│   ├── MessageRepository.h
+│   └── UserRepository.h
+└── utils
+    └── logger.h

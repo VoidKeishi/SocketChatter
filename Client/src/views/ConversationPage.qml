@@ -5,8 +5,10 @@ import QtQuick.Controls.Material
 import Client 1.0
 
 Page {
-    id: root
+    id: conversationPage
     property string inConversationWith
+    Material.theme: Material.Dark
+    Material.accent: Material.Purple
 
     header: ToolBar {
         background: Rectangle {
@@ -14,7 +16,7 @@ Page {
         }
         Label {
             id: pageTitle
-            text: root.inConversationWith
+            text: conversationPage.inConversationWith
             font.pixelSize: 20
             anchors.centerIn: parent
             color: "#FFFFFF"
@@ -34,7 +36,7 @@ Page {
             verticalLayoutDirection: ListView.TopToBottom
             spacing: 12
             model: SqlConversationModel {
-                recipient: root.inConversationWith
+                recipient: conversationPage.inConversationWith
             }
 
             delegate: Column {
@@ -166,7 +168,7 @@ Page {
                     Layout.preferredHeight: 50
                     Material.background: Material.Purple
                     onClicked: {
-                        listView.model.sendMessage(root.inConversationWith, messageField.text)
+                        listView.model.sendMessage(conversationPage.inConversationWith, messageField.text)
                         messageField.text = ""
                     }
                 }

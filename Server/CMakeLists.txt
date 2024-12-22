@@ -20,8 +20,11 @@ find_package(SQLite3 REQUIRED)
 file(GLOB_RECURSE SOURCES "src/*.cpp")
 file(GLOB_RECURSE HEADERS "src/*.h")
 
+# Resources
+qt_add_resources(RESOURCES resources.qrc)
+
 # Add executable (define the target)
-add_executable(Server ${SOURCES} ${HEADERS})
+add_executable(Server ${SOURCES} ${HEADERS} ${RESOURCES})
 
 # Include directories (modify the target after it's defined)
 target_include_directories(Server PRIVATE
@@ -31,6 +34,7 @@ target_include_directories(Server PRIVATE
     ${Qt6Sql_INCLUDE_DIRS}
     ${SQLite3_INCLUDE_DIRS}
 )
+
 
 # Link libraries
 target_link_libraries(Server PRIVATE

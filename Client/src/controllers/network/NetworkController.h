@@ -10,10 +10,12 @@ public:
     static NetworkController* instance();
 
     void connectToServer(const QString &host, quint16 port);
-    void sendData(const QByteArray &data);
+
+public slots:
+    void sendData(const QByteArray &data);    
 
 signals:
-    void dataReceived(const QByteArray &data);
+    void rawDataReceived(const QByteArray &data);
     void connected();
     void disconnected();
 

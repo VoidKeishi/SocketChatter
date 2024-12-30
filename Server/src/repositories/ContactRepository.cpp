@@ -44,16 +44,6 @@ bool ContactRepository::updateRequestStatus(const QString& from, const QString& 
         return false;
     }
 
-    if (status == "accepted") {
-        query.prepare("INSERT INTO friends (user1, user2) VALUES (?, ?)");
-        query.addBindValue(from);
-        query.addBindValue(to);
-        if (!query.exec()) {
-            db->database().rollback();
-            return false;
-        }
-    }
-
     // Delete the friend request if it is accepted or rejected
     if (status == "accepted" || status == "rejected") {
         query.prepare("DELETE FROM friend_requests WHERE from_user = ? AND to_user = ?");
@@ -63,6 +53,7 @@ bool ContactRepository::updateRequestStatus(const QString& from, const QString& 
             db->database().rollback();
             return false;
         }
+        qDebug() << "Friend request deleted";
     }
 
     return db->database().commit();

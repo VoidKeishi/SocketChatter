@@ -13,9 +13,6 @@ ContactHandler::ContactHandler(DatabaseManager* db)
         {"FETCH_RECEIVED_REQUESTS", [this](const QJsonObject& p) { handleGetPendingRequests(p); }},
         {"SEND_FRIEND_REQUEST", [this](const QJsonObject& p) { handleSendRequest(p); }},
         {"CANCEL_FRIEND_REQUEST", [this](const QJsonObject& p) { handleCancelSentRequest(p); }},
-        {"FRIEND_REQUEST_RESPONSE", [this](const QJsonObject& p) { handleResponseRequest(p); }},
-        {"FRIEND_REQUEST_CANCEL", [this](const QJsonObject& p) { handleCancelSentRequest(p); }},
-        {"FRIEND_REQUESTS_GET", [this](const QJsonObject& p) { handleGetPendingRequests(p); }},
         {"RESPOND_TO_FRIEND_REQUEST", [this](const QJsonObject& p) { handleResponseRequest(p); }},
         {"DELETE_FRIEND_REQUEST", [this](const QJsonObject& p) { handleDeleteFriend(p); }},
     };
@@ -139,10 +136,9 @@ void ContactHandler::handleResponseRequest(const QJsonObject& request) {
 
     QString status = accept ? "accepted" : "rejected";
     
-    if (contactRepo.updateRequestStatus(from, to, status)) {
+    if (contactRepo.updateRequestStatus(to, from, status)) {
         if (accept) {
-            // Add both users as friends if accepted
-            contactRepo.addFriendship(from, to);
+            contactRepo.addFriendship(to, from);
         }
         
         emit responseReady({

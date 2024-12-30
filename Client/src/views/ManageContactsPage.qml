@@ -2,13 +2,21 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick.Controls.Material
-import Client 1.0
+import QtQuick.Effects
 
 Page {
     id: manageContactsPage
     signal navigateBack()
     Material.theme: Material.Dark
     Material.accent: Material.Purple
+
+    Component.onCompleted: {
+        contactViewModel.fetchFriends()
+        contactViewModel.fetchSentRequests()
+        contactViewModel.fetchReceivedRequests()
+    }
+
+    // We'll assume "contactViewModel" is provided in QML context by the parent or main QML file
 
     ColumnLayout {
         anchors.fill: parent
@@ -18,19 +26,14 @@ Page {
         ToolBar {
             id: header
             height: 56
-            background: Rectangle {
-                color: Material.background
-            }
+            background: Rectangle { color: Material.background }
             RowLayout {
                 spacing: 16
                 anchors.verticalCenter: parent.verticalCenter
-
-                // Back Button
                 Button {
                     icon.source: "qrc:/src/views/assets/arrow_back.png"
                     onClicked: manageContactsPage.navigateBack()
                 }
-
                 Label {
                     text: qsTr("Manage Contacts")
                     font.pixelSize: 20
@@ -44,18 +47,10 @@ Page {
         TabBar {
             id: tabBar
             Layout.fillWidth: true
-
-            TabButton {
-                text: qsTr("Send Request")
-            }
-            TabButton {
-                text: qsTr("Received Requests")
-            }
-            TabButton {
-                text: qsTr("Friends")
-            }
+            TabButton { text: qsTr("Send Request") }
+            TabButton { text: qsTr("Received Requests") }
+            TabButton { text: qsTr("Friends") }
         }
-
 
         StackLayout {
             id: stackLayout
@@ -69,40 +64,33 @@ Page {
                 Layout.margins: 16
                 Layout.alignment: Qt.AlignTop
 
-                // Send Request Section
                 TextField {
                     id: sendRequestField
                     placeholderText: qsTr("Enter username")
                     Layout.fillWidth: true
                     Layout.topMargin: 16
-                    Layout.leftMargin: 16
-                    Layout.rightMargin: 16
                 }
 
                 Button {
                     text: qsTr("Send Friend Request")
                     icon.source: "qrc:/src/views/assets/person_add.png"
                     onClicked: {
-                        contactsController.addFriend(sendRequestField.text)
+                        contactViewModel.sendFriendRequest(sendRequestField.text)
                         sendRequestField.clear()
                     }
                     Layout.leftMargin: 16
                 }
 
-                // Sent Requests Section
                 Label {
                     text: qsTr("Sent Requests")
                     font.pixelSize: 20
                     color: Material.foreground
-                    Layout.alignment: Qt.AlignVCenter
                     Layout.leftMargin: 16
                 }
 
                 ListView {
                     Layout.fillWidth: true
-                    width: stackLayout.width
-                    model: sentRequestModel
-
+                    model: contactViewModel.sentRequests
                     delegate: ItemDelegate {
                         width: ListView.view.width
                         contentItem: RowLayout {
@@ -111,9 +99,14 @@ Page {
                                 source: "qrc:/src/views/assets/person_outline.png"
                                 width: 40
                                 height: 40
+                                layer.enabled: true
+                                layer.effect: MultiEffect {
+                                    colorization: 1.0
+                                    colorizationColor: Material.foreground
+                                }
                             }
                             Label {
-                                text: model.username
+                                text: modelData
                                 font.pixelSize: 16
                                 color: Material.foreground
                                 Layout.fillWidth: true
@@ -122,7 +115,7 @@ Page {
                                 text: qsTr("Cancel")
                                 icon.source: "qrc:/src/views/assets/cancel.png"
                                 onClicked: {
-                                    clientController.cancelFriendRequest(model.username)
+                                    contactViewModel.cancelFriendRequest(modelData)
                                 }
                             }
                         }
@@ -134,8 +127,7 @@ Page {
             ListView {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                model: receivedRequestModel
-
+                model: contactViewModel.receivedRequests
                 delegate: ItemDelegate {
                     width: ListView.view.width
                     contentItem: RowLayout {
@@ -146,7 +138,7 @@ Page {
                             height: 40
                         }
                         Label {
-                            text: model.username
+                            text: modelData
                             font.pixelSize: 16
                             color: Material.foreground
                             Layout.fillWidth: true
@@ -155,14 +147,14 @@ Page {
                             text: qsTr("Accept")
                             icon.source: "qrc:/src/views/assets/check_circle.png"
                             onClicked: {
-                                clientController.acceptFriendRequest(model.username)
+                                contactViewModel.respondFriendRequest(modelData, true)
                             }
                         }
                         Button {
                             text: qsTr("Reject")
                             icon.source: "qrc:/src/views/assets/remove_circle.png"
                             onClicked: {
-                                clientController.rejectFriendRequest(model.username)
+                                contactViewModel.respondFriendRequest(modelData, false)
                             }
                         }
                     }
@@ -173,8 +165,7 @@ Page {
             ListView {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                model: friendsModel
-
+                model: contactViewModel.friends
                 delegate: ItemDelegate {
                     width: ListView.view.width
                     contentItem: RowLayout {
@@ -185,7 +176,7 @@ Page {
                             height: 40
                         }
                         Label {
-                            text: model.username
+                            text: modelData
                             font.pixelSize: 16
                             color: Material.foreground
                             Layout.fillWidth: true
@@ -194,7 +185,7 @@ Page {
                             text: qsTr("Delete")
                             icon.source: "qrc:/src/views/assets/delete.png"
                             onClicked: {
-                                clientController.deleteFriend(model.username)
+                                contactViewModel.deleteFriend(modelData)
                             }
                         }
                     }
@@ -202,5 +193,4 @@ Page {
             }
         }
     }
-
 }

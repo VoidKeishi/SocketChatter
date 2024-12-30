@@ -1,27 +1,31 @@
-#ifndef AUTHCONTROLLER_H
-#define AUTHCONTROLLER_H
-
+#pragma once
+#include "../IController.h"
+#include "../../viewmodels/AuthViewModel.h"
 #include <QObject>
-#include <QString>
+#include <QMap>
+#include <functional>
 
-class AuthController : public QObject {
+class AuthController : public QObject, public IController {
     Q_OBJECT
 public:
-    explicit AuthController(QObject *parent = nullptr);
-    Q_INVOKABLE void handleLoginRequest(const QString &username, const QString &password);
-    Q_INVOKABLE void handleRegisterRequest(const QString &username, const QString &password);
-    Q_INVOKABLE void logout();
+    explicit AuthController(AuthViewModel* viewModel, QObject* parent = nullptr);
+    
+    // IController interface
+    bool canHandle(const QString& type) const override;
+    void handle(const QString& type, const QJsonObject& payload) override;
 
 public slots:
-    void onLoginResponse(const QJsonObject &response);
-    void onRegisterResponse(const QJsonObject &response);
+    void requestLogin(const QString& username, const QString& password);
+    void requestRegister(const QString& username, const QString& password);
+    void logout();
 
 signals:
-    void loginRequest(const QByteArray &data);
-    void registerRequest(const QByteArray &data);
-    void loginResult(bool success, const QString &message);
-    void registerResult(bool success, const QString &message);
-    void logoutRequest();
-};
+    void sendRequest(const QByteArray& data);
 
-#endif // AUTHCONTROLLER_H
+private:
+    AuthViewModel* m_viewModel;
+    QMap<QString, std::function<void(const QJsonObject&)>> handlers;
+
+    void handleLoginResponse(const QJsonObject& response);
+    void handleRegisterResponse(const QJsonObject& response);
+};

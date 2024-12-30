@@ -2,7 +2,6 @@ import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
 import QtQuick.Controls.Material
-import Client 1.0
 
 Page {
     id: conversationPage
@@ -23,6 +22,10 @@ Page {
         }
     }
 
+    Component.onCompleted: {
+        conversationViewModel.setRecipient(inConversationWith)
+    }
+
     ColumnLayout {
         anchors.fill: parent
 
@@ -35,9 +38,7 @@ Page {
             displayMarginEnd: 40
             verticalLayoutDirection: ListView.TopToBottom
             spacing: 12
-            model: SqlConversationModel {
-                recipient: conversationPage.inConversationWith
-            }
+            model: conversationViewModel
 
             delegate: Column {
                 id: conversationDelegate
@@ -45,10 +46,9 @@ Page {
                 width: listView.width
                 
                 required property string author
-                required property string recipient
+                required property string content 
                 required property date timestamp
-                required property string message
-                readonly property bool sentByMe: recipient !== "Me"
+                required property bool sentByMe
 
                 anchors {
                     right: sentByMe ? listView.contentItem.right : undefined
@@ -94,7 +94,7 @@ Page {
                                 fill: parent
                                 margins: 12
                             }
-                            text: conversationDelegate.message
+                            text: conversationDelegate.content
                             wrapMode: Label.Wrap
                             color: "black"
                         }
@@ -168,7 +168,7 @@ Page {
                     Layout.preferredHeight: 50
                     Material.background: Material.Purple
                     onClicked: {
-                        listView.model.sendMessage(conversationPage.inConversationWith, messageField.text)
+                        conversationViewModel.sendMessage(messageField.text)
                         messageField.text = ""
                     }
                 }

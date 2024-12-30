@@ -27,7 +27,4 @@
         <file>src/views/assets/remove_circle.png</file>
         <file>src/views/assets/cancel.png</file>
     </qresource>
-    <qresource prefix="/">
-        <file>src/database/schema.sql</file>
-    </qresource>
 </RCC>

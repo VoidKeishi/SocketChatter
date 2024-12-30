@@ -5,44 +5,39 @@
 
 ResponseDispatcher::ResponseDispatcher(QObject *parent) : QObject(parent) {}
 
-void ResponseDispatcher::onRawDataReceived(const QByteArray &data) {
+void ResponseDispatcher::registerController(IController* controller) {
+    if (!controller) {
+        qWarning() << "Attempting to register null controller";
+        return;
+    }
+    controllers.append(controller);
+}
+
+void ResponseDispatcher::onRawDataReceived(const QByteArray& data) {
     dispatchResponse(data);
 }
 
-void ResponseDispatcher::dispatchResponse(const QByteArray &data) {
-    qDebug() << "Raw response data:" << QString(data);
-    QJsonParseError parseError;
-    QJsonDocument doc = QJsonDocument::fromJson(data, &parseError);
-    if (parseError.error != QJsonParseError::NoError) {
-        qWarning() << "JSON parse error:" << parseError.errorString();
+void ResponseDispatcher::dispatchResponse(const QByteArray& data) {
+    QJsonParseError error;
+    QJsonDocument doc = QJsonDocument::fromJson(data, &error);
+    
+    if (error.error != QJsonParseError::NoError) {
+        qWarning() << "JSON parse error:" << error.errorString();
         return;
     }
 
-    QJsonObject jsonObj = doc.object();
-    QString type = jsonObj.value("type").toString();
+    QJsonObject response = doc.object();
+    QString type = response["type"].toString();
+    QJsonObject payload = response["payload"].toObject();
 
-    if (type == "LOGIN_RESPONSE") {
-        emit loginResponseReceived(jsonObj);
+    qDebug() << "Dispatching response type:" << type;
+
+    for (IController* controller : controllers) {
+        if (controller->canHandle(type)) {
+            controller->handle(type, payload);
+            return;
+        }
     }
-    else if (type == "REGISTER_RESPONSE") {
-        emit registerResponseReceived(jsonObj);
-    }
-    else if (type == "FRIEND_REQUEST_SENT_RESPONSE") {
-        emit friendRequestSentResponse(jsonObj);
-    }
-    else if (type == "FRIEND_REQUEST_CANCELED_RESPONSE") {
-        emit friendRequestCanceledResponse(jsonObj);
-    }
-    else if (type == "FRIEND_REQUEST_RESPONSE") {
-        emit friendRequestResponse(jsonObj);
-    }
-    else if (type == "FRIEND_DELETED_RESPONSE") {
-        emit friendDeletedResponse(jsonObj);
-    }
-    else if (type == "FETCH_FRIENDS_LIST_RESPONSE") {
-        emit friendsListFetchedResponse(jsonObj);
-    }
-    else {
-        qWarning() << "Unknown response type:" << type;
-    }
+
+    qWarning() << "No handler found for response type:" << type;
 }

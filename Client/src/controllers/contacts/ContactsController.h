@@ -1,44 +1,42 @@
-#ifndef CONTACTSCONTROLLER_H
-#define CONTACTSCONTROLLER_H
-
+#pragma once
+#include "../IController.h"
+#include "../../viewmodels/ContactViewModel.h"
 #include <QObject>
 #include <QStringList>
+#include <QMap>
 
-class ContactsController : public QObject {
+class ContactsController : public QObject, public IController {
     Q_OBJECT
 
 public:
-    explicit ContactsController(QObject *parent = nullptr);
+    explicit ContactsController(ContactViewModel* viewModel, QObject* parent = nullptr);
+    bool canHandle(const QString& type) const override;
+    void handle(const QString& type, const QJsonObject& payload) override;
+    void requestAddFriend(const QString &username);
+    void requestCancelFriend(const QString &username);
+    void requestRespondToFriend(const QString &username, bool accept);
+    void requestDeleteFriend(const QString &username);
+    void requestFetchFriends();
+    void requestFetchSentRequests();
+    void requestFetchReceivedRequests();
 
-    // Methods to handle UI actions
-    Q_INVOKABLE void requestAddFriend(const QString &username);
-    Q_INVOKABLE void requestCancelFriend(const QString &username);
-    Q_INVOKABLE void requestRespondToFriend(const QString &username, bool accept);
-    Q_INVOKABLE void requestDeleteFriend(const QString &username);
-    Q_INVOKABLE void requestFetchFriends();
+signals:
+    // Signals to send requests to server
+    void sendRequest(const QByteArray &data);
 
 public slots:
+    void handleContactAction(ContactAction action, const QString& username, bool param);
+
+private:
+    ContactViewModel* m_viewModel;
+    QMap<QString, std::function<void(const QJsonObject&)>> handlers;
+
     // Slots to handle responses from server
     void handleFriendRequestSent(const QJsonObject &response);
     void handleFriendRequestCanceled(const QJsonObject &response);
     void handleFriendRequestResponse(const QJsonObject &response);
     void handleFriendsListFetched(const QJsonObject &response);
     void handleFriendDeleted(const QJsonObject &response);
-
-signals:
-    // Signals to send requests to server
-    void sendAddFriend(const QByteArray &data);
-    void sendCancelFriend(const QByteArray &data);
-    void sendRespondToFriend(const QByteArray &data);
-    void sendDeleteFriend(const QByteArray &data);
-    void sendFetchFriends(const QByteArray &data);
-
-    // Signals to inform UI of results
-    void addFriendResult(bool success, const QString &message);
-    void cancelFriendResult(bool success, const QString &message);
-    void friendResponseResult(bool success, const QString &message);
-    void friendDeletedResult(bool success, const QString &message);
-    void friendsListResult(const QStringList &friends);
+    void handleSentListFetched(const QJsonObject& response);
+    void handleReceivedListFetched(const QJsonObject& response);
 };
-
-#endif // CONTACTSCONTROLLER_H

@@ -2,21 +2,23 @@
 #include "network/NetworkController.h"
 #include <QDebug>
 
-ControllerManager::ControllerManager(QObject *parent) : QObject(parent) {
-        // Instantiate Controllers
-        authController = new AuthController(this);
-        contactsController = new ContactsController(this);
+ControllerManager* ControllerManager::m_instance = nullptr;
 
-        // Instantiate Models
-        friendListModel = new FriendListModel(this);
-        sentRequestModel = new SentRequestModel(this);
-        receivedRequestModel = new ReceivedRequestModel(this);
+ControllerManager::ControllerManager(QObject *parent) : QObject(parent) {
+        m_authViewModel = new AuthViewModel(this);
+        m_contactViewModel = new ContactViewModel(this);
+
+        authController = new AuthController(m_authViewModel, this);
+        contactsController = new ContactsController(m_contactViewModel, this);
 
         // Instantiate ResponseDispatcher
         responseDispatcher = new ResponseDispatcher(this);
+        responseDispatcher->registerController(authController);
+        responseDispatcher->registerController(contactsController);
 
         // Get the singleton instance of NetworkController
         networkController = NetworkController::instance();
+        networkController->connectToServer("localhost", 3000);
 }
 
 ControllerManager* ControllerManager::instance() {
@@ -27,62 +29,15 @@ ControllerManager* ControllerManager::instance() {
 }
 
 void ControllerManager::initControllers() {
-        // =========================================
-        // 1. Connect NetworkController to ResponseDispatcher
-        // =========================================
+        // Connect NetworkController to ResponseDispatcher
         connect(networkController, &NetworkController::rawDataReceived,
                         responseDispatcher, &ResponseDispatcher::onRawDataReceived);
 
-        // =========================================
-        // 2. Connect ResponseDispatcher to AuthController
-        // =========================================
-        connect(responseDispatcher, &ResponseDispatcher::loginResponseReceived,
-                        authController, &AuthController::onLoginResponse);
-        connect(responseDispatcher, &ResponseDispatcher::registerResponseReceived,
-                        authController, &AuthController::onRegisterResponse);
-
-        // =========================================
-        // 3. Connect ResponseDispatcher to ContactsController
-        // =========================================
-        connect(responseDispatcher, &ResponseDispatcher::friendRequestSentResponse,
-                        contactsController, &ContactsController::handleFriendRequestSent);
-        connect(responseDispatcher, &ResponseDispatcher::friendRequestCanceledResponse,
-                        contactsController, &ContactsController::handleFriendRequestCanceled);
-        connect(responseDispatcher, &ResponseDispatcher::friendRequestResponse,
-                        contactsController, &ContactsController::handleFriendRequestResponse);
-        connect(responseDispatcher, &ResponseDispatcher::friendsListFetchedResponse,
-                        contactsController, &ContactsController::handleFriendsListFetched);
-
-        // =========================================
-        // 4. Connect Controllers' Send Signals to NetworkController's sendData
-        // =========================================
         // AuthController Signals
-        connect(authController, &AuthController::loginRequest,
-                        networkController, &NetworkController::sendData);
-        connect(authController, &AuthController::registerRequest,
+        connect(authController, &AuthController::sendRequest,
                         networkController, &NetworkController::sendData);
 
         // ContactsController Signals
-        connect(contactsController, &ContactsController::sendAddFriend,
+        connect(contactsController, &ContactsController::sendRequest,
                         networkController, &NetworkController::sendData);
-        connect(contactsController, &ContactsController::sendCancelFriend,
-                        networkController, &NetworkController::sendData);
-        connect(contactsController, &ContactsController::sendRespondToFriend,
-                        networkController, &NetworkController::sendData);
-        connect(contactsController, &ContactsController::sendDeleteFriend,
-                        networkController, &NetworkController::sendData);
-        connect(contactsController, &ContactsController::sendFetchFriends,
-                        networkController, &NetworkController::sendData);
-
-        // =========================================
-        // 5. Connect ContactsController signals to models
-        // =========================================
-        connect(contactsController, &ContactsController::friendsListResult,
-                        friendListModel, &FriendListModel::updateFriendsList);
-                        
-        connect(contactsController, &ContactsController::addFriendResult,
-                        sentRequestModel, &SentRequestModel::onFriendRequestSent);
-                        
-        connect(contactsController, &ContactsController::friendResponseResult,
-                        receivedRequestModel, &ReceivedRequestModel::onFriendRequestResponse);
 }

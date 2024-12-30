@@ -13,7 +13,7 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
 # Find Qt 6.8 components
-find_package(Qt6 6.8.1 COMPONENTS Gui Core Network Quick Qml Sql REQUIRED)
+find_package(Qt6 6.8.1 COMPONENTS Gui Core Network Quick QuickControls2 Qml Sql REQUIRED)
 find_package(SQLite3 REQUIRED)
 
 file(GLOB_RECURSE SOURCES "src/*.cpp")
@@ -47,5 +47,6 @@ target_link_libraries(Client PRIVATE
     Qt6::Quick
     Qt6::Qml
     Qt6::Sql
+    Qt6::QuickControls2
     SQLite::SQLite3
 )

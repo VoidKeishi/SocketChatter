@@ -9,9 +9,11 @@ public:
 
 private:
     ContactRepository contactRepo;
-    void handleGetFriendList(const QJsonObject& payload);
-    void handleSendRequest(const QJsonObject& payload);
-    void handleCancelSentRequest(const QJsonObject& payload);
-    void handleResponseRequest(const QJsonObject& payload);
-    void handleGetPendingRequests(const QJsonObject& payload);
+    void handleSendRequest(const QJsonObject& request);
+    void handleCancelSentRequest(const QJsonObject& request);
+    void handleResponseRequest(const QJsonObject& request);
+    // Handle fetch data requests
+    void handleGetFriendList(const QJsonObject& request);
+    void handleGetPendingRequests(const QJsonObject& request);
+    void handleGetSentRequestList(const QJsonObject& request);
 };

@@ -34,6 +34,7 @@ void NetworkController::onConnected() {
 }
 
 void NetworkController::sendData(const QByteArray &data) {
+    qDebug() << "Sending data:" << data;
     if (socket->state() == QAbstractSocket::ConnectedState) {
         socket->write(data);
         socket->flush();

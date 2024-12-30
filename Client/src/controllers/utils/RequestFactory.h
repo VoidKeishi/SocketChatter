@@ -5,9 +5,10 @@
 #include <QString>
 #include <QDateTime>
 #include <QJsonDocument>
+#include "../session/UserManager.h"
 
 namespace RequestFactory
-{   
+{
     // Auth requests
     inline QByteArray createLoginRequest(const QString &username, const QString &password)
     {
@@ -80,9 +81,30 @@ namespace RequestFactory
     inline QByteArray createFetchFriendsListRequest()
     {
         QJsonObject request = {
-            {"type", "FETCH_FRIENDS_LIST_REQUEST"},
+            {"type", "FETCH_FRIEND_LIST"},
             {"timestamp", QDateTime::currentSecsSinceEpoch()},
-            {"payload", QJsonObject{}}};
+            {"payload", QJsonObject{
+                            {"username", UserManager::instance()->currentUser()}}}};
+        return QJsonDocument(request).toJson(QJsonDocument::Compact) + '\n';
+    }
+
+    inline QByteArray createFetchSentRequestsRequest()
+    {
+        QJsonObject request = {
+            {"type", "FETCH_SENT_REQUESTS"},
+            {"timestamp", QDateTime::currentSecsSinceEpoch()},
+            {"payload", QJsonObject{
+                            {"username", UserManager::instance()->currentUser()}}}};
+        return QJsonDocument(request).toJson(QJsonDocument::Compact) + '\n';
+    }
+
+    inline QByteArray createFetchReceivedRequestsRequest()
+    {
+        QJsonObject request = {
+            {"type", "FETCH_RECEIVED_REQUESTS"},
+            {"timestamp", QDateTime::currentSecsSinceEpoch()},
+            {"payload", QJsonObject{
+                            {"username", UserManager::instance()->currentUser()}}}};
         return QJsonDocument(request).toJson(QJsonDocument::Compact) + '\n';
     }
 

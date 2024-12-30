@@ -1,53 +1,75 @@
 #include "AuthController.h"
 #include "../utils/RequestFactory.h"
 #include "../utils/HashUtility.h"
-#include "../utils/LoggingCategories.h"
 #include "../session/UserManager.h"
-#include <QJsonObject>
-#include <QJsonDocument>
-#include <QString>
 #include <QDebug>
 
-AuthController::AuthController(QObject *parent) : QObject(parent) {
+AuthController::AuthController(AuthViewModel* viewModel, QObject* parent)
+    : QObject(parent)
+    , m_viewModel(viewModel)
+{
+    handlers = {
+        {"LOGIN_RESPONSE", [this](const QJsonObject& p) { handleLoginResponse(p); }},
+        {"REGISTER_RESPONSE", [this](const QJsonObject& p) { handleRegisterResponse(p); }}
+    };
 }
 
-void AuthController::handleLoginRequest(const QString &username, const QString &password) {
-    qCInfo(authController) << "Login requested with username:" << username;
+bool AuthController::canHandle(const QString& type) const {
+    return handlers.contains(type);
+}
+
+void AuthController::handle(const QString& type, const QJsonObject& payload) {
+    if (handlers.contains(type)) {
+        m_viewModel->setLoading(true);
+        handlers[type](payload);
+    }
+}
+
+void AuthController::requestLogin(const QString& username, const QString& password) {
+    qDebug() << "Login requested for user:" << username;
+    m_viewModel->setLoading(true);
     QString passwordHash = HashUtility::hashPassword(password);
     QByteArray requestData = RequestFactory::createLoginRequest(username, passwordHash);
-    emit loginRequest(requestData);
+    qDebug() << "Emitting login request";
+    emit sendRequest(requestData);
 }
 
-void AuthController::handleRegisterRequest(const QString &username, const QString &password) {
-    qCInfo(authController) << "Register requested with username:" << username;
+void AuthController::requestRegister(const QString& username, const QString& password) {
+    qDebug() << "Register requested for user:" << username;
+    m_viewModel->setLoading(true);
     QString passwordHash = HashUtility::hashPassword(password);
     QByteArray requestData = RequestFactory::createRegisterRequest(username, passwordHash);
-    emit registerRequest(requestData);
+    qDebug() << "Emitting register request";
+    emit sendRequest(requestData);
 }
 
-void AuthController::onLoginResponse(const QJsonObject &response) {
-    QJsonObject payload = response.value("payload").toObject();
-    bool success = payload.value("success").toBool();
+void AuthController::handleLoginResponse(const QJsonObject& response) {
+    qDebug() << "Handling login response:" << response;
+    bool success = response.value("success").toBool();
+    QString message = response.value("message").toString();
+    
     if (success) {
-        QString username = payload.value("username").toString();
-        qCInfo(authController) << "Login successful for user:" << username;
+        QString username = response.value("username").toString();
+        qDebug() << "Setting current user:" << username;
         UserManager::instance()->setCurrentUser(username);
+        m_viewModel->setLoggedIn(true);
     }
-    QString message = payload.value("message").toString(); 
-    qCInfo(authController) << "Login response received with success:" << success << ", message:" << message;
-    emit loginResult(success, message);
+    
+    m_viewModel->setMessage(message);
+    m_viewModel->setLoading(false);
 }
 
-void AuthController::onRegisterResponse(const QJsonObject &response) {
-    QJsonObject payload = response.value("payload").toObject();
-    bool success = payload.value("success").toBool();
-    QString message = payload.value("message").toString();
-    qCInfo(authController) << "Register response received with success:" << success << ", message:" << message;
-    emit registerResult(success, message);
+void AuthController::handleRegisterResponse(const QJsonObject& response) {
+    bool success = response.value("success").toBool();
+    QString message = response.value("message").toString();
+    
+    m_viewModel->setMessage(message);
+    m_viewModel->setRegistered(success);
+    m_viewModel->setLoading(false);
 }
 
 void AuthController::logout() {
-    qCInfo(authController) << "Logout requested";
     UserManager::instance()->setCurrentUser("");
-    emit logoutRequest();
+    m_viewModel->setLoggedIn(false);
+    m_viewModel->setMessage("");
 }

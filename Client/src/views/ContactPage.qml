@@ -2,7 +2,6 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick.Controls.Material
-import Client 1.0
 
 Page {
     id: contactPage
@@ -30,7 +29,7 @@ Page {
             rightMargin: 48
             bottomMargin: 48
             spacing: 20
-            model: SqlContactModel {}            
+            model: contactViewModel.friends   
             delegate: ItemDelegate {
                 id: contactDelegate
                 width: listView.width - listView.leftMargin - listView.rightMargin
@@ -38,8 +37,8 @@ Page {
                 leftPadding: avatar.implicitWidth + 32
 
                 onClicked: {
-                    console.log("Contact clicked:", model.name) // For debugging
-                    contactPage.contactClicked(model.name)
+                    console.log("Contact clicked:", modelData) 
+                    contactPage.contactClicked(modelData)
                 }
 
                 RowLayout {
@@ -57,7 +56,7 @@ Page {
                     }
 
                     Label {
-                        text: model.name
+                        text: modelData
                         font.pixelSize: 16
                         Layout.fillWidth: true
                         color: "#FFFFFF"

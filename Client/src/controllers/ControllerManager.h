@@ -5,9 +5,8 @@
 #include "auth/AuthController.h"
 #include "contacts/ContactsController.h"
 #include "network/ResponseDispatcher.h"
-#include "../models/contacts/FriendListModel.h"
-#include "../models/contacts/SentRequestModel.h"
-#include "../models/contacts/ReceivedRequestModel.h"
+#include "../viewmodels/AuthViewModel.h"
+#include "../viewmodels/ContactViewModel.h"
 
 class NetworkController;
 
@@ -18,19 +17,22 @@ public:
     static ControllerManager* instance();
     void initControllers();
 
-    // Controllers
-    AuthController *authController;
-    ContactsController *contactsController;
+    // Public controllers for QML
+    AuthController* authController;
+    ContactsController* contactsController;
 
-    // Models
-    FriendListModel *friendListModel;
-    SentRequestModel *sentRequestModel;
-    ReceivedRequestModel *receivedRequestModel;
+    // ViewModel getters
+    AuthViewModel* authViewModel() const { return m_authViewModel; }
+    ContactViewModel* contactViewModel() const { return m_contactViewModel; }
 
 private:
     static ControllerManager* m_instance;
-    ResponseDispatcher *responseDispatcher;
+    ResponseDispatcher* responseDispatcher;
     NetworkController* networkController;
+
+    // Private ViewModels
+    AuthViewModel* m_authViewModel;
+    ContactViewModel* m_contactViewModel;
 };
 
 #endif // CONTROLLERMANAGER_H

@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS friend_requests (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     from_user TEXT NOT NULL,
     to_user TEXT NOT NULL,
-    status TEXT CHECK(status IN ('pending', 'accepted', 'rejected')) NOT NULL DEFAULT 'pending',
+    status TEXT CHECK(status IN ('pending', 'cancelled', 'accepted', 'rejected')) NOT NULL DEFAULT 'pending',
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (from_user) REFERENCES users(username),
     FOREIGN KEY (to_user) REFERENCES users(username),

@@ -4,7 +4,7 @@ import QtQuick.Controls.Material
 import QtQuick.Layouts
 
 ApplicationWindow {
-    id: main
+    id: mainWindow
     width: 1280
     height: 960
     visible: true
@@ -12,6 +12,8 @@ ApplicationWindow {
     // Enable Material theme with dark mode
     Material.theme: Material.Dark
     Material.accent: Material.Purple
+
+    title: qsTr("Main Window")
 
     // Dark background
     color: "#121212"

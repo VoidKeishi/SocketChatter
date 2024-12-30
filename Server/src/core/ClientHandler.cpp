@@ -2,6 +2,7 @@
 #include <QJsonDocument>
 #include <QJsonParseError>
 #include <QDebug>
+#include "../utils/logger.h"
 
 
 ClientHandler::ClientHandler(QTcpSocket* socket, QObject* parent) 
@@ -51,7 +52,7 @@ void ClientHandler::onReadyRead() {
         if (clientIp.startsWith("::ffff:")) {
             clientIp = clientIp.mid(7); // Remove the "::ffff:" prefix
         }
-        qDebug() << "Received request from" << clientIp << ":" << clientSocket->peerPort() << request;
+        Logger::json(QString("Received request from %1:%2").arg(clientIp).arg(clientSocket->peerPort()), request);        
         processRequest(request);
     }
 }
@@ -87,5 +88,5 @@ void ClientHandler::sendResponse(const QJsonObject& response) {
     QByteArray data = doc.toJson(QJsonDocument::Compact) + "\n";
     clientSocket->write(data);
     clientSocket->flush();
-    qDebug() << "Sent response:" << QString(data);
+    Logger::json("Sent response", response);
 }

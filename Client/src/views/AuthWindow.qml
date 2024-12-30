@@ -1,22 +1,15 @@
-// LoginWindow.qml
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick.Controls.Material
 
-
 ApplicationWindow {
-    signal loginRequested(string username, string password)
-    signal loginResult(bool success, string message)
-    signal registerRequested(string username, string password)
-    signal registerResult(bool success, string message)
     id: authWindow
     width: 540
     height: 960
     visible: true
     title: qsTr("Login")
 
-    // Enable Material dark theme
     Material.theme: Material.Dark
     Material.accent: Material.Purple
     color: "#121212"
@@ -25,12 +18,17 @@ ApplicationWindow {
         id: bar
         width: parent.width
         Material.background: "#1E1E1E"
+        currentIndex: authViewModel.currentTab
+        enabled: !authViewModel.isLoading
+        onCurrentIndexChanged: authViewModel.setCurrentTab(currentIndex)
 
         TabButton {
             text: qsTr("Login")
+            enabled: !authViewModel.isLoading
         }
         TabButton {
             text: qsTr("Register")
+            enabled: !authViewModel.isLoading
         }
     }
 
@@ -43,26 +41,26 @@ ApplicationWindow {
         // Login page
         Page {
             id: loginPage
+            enabled: !authViewModel.isLoading
             background: Rectangle { color: "#121212" }
-
-            Label {
-                text: qsTr("Welcome to Socket Chat!")
-                font.pixelSize: 20
-                color: "#FFFFFF"
-                anchors.horizontalCenter: parent.horizontalCenter
-                anchors.top: parent.top
-                anchors.topMargin: 70
-            }
 
             ColumnLayout {
                 anchors.centerIn: parent
                 spacing: 20
                 width: parent.width * 0.8
 
+                Label {
+                    text: qsTr("Welcome to Socket Chat!")
+                    font.pixelSize: 20
+                    color: "#FFFFFF"
+                    Layout.alignment: Qt.AlignHCenter
+                }
+
                 TextField {
                     id: usernameField
                     placeholderText: qsTr("Username")
                     Layout.fillWidth: true
+                    enabled: !authViewModel.isLoading
                     Material.accent: Material.Purple
                 }
 
@@ -71,16 +69,24 @@ ApplicationWindow {
                     placeholderText: qsTr("Password")
                     echoMode: TextInput.Password
                     Layout.fillWidth: true
+                    enabled: !authViewModel.isLoading
                     Material.accent: Material.Purple
                 }
 
                 Button {
-                    text: qsTr("Login")
+                    text: authViewModel.isLoading ? qsTr("Logging in...") : qsTr("Login")
                     Layout.fillWidth: true
                     Material.background: Material.Purple
+                    enabled: !authViewModel.isLoading && usernameField.text && passwordField.text
                     onClicked: {
-                        authController.handleLoginRequest(usernameField.text, passwordField.text)
+                        authController.requestLogin(usernameField.text, passwordField.text)
                     }
+                }
+
+                BusyIndicator {
+                    Layout.alignment: Qt.AlignHCenter
+                    visible: authViewModel.isLoading
+                    running: visible
                 }
             }
         }
@@ -88,26 +94,26 @@ ApplicationWindow {
         // Register page
         Page {
             id: registerPage
+            enabled: !authViewModel.isLoading
             background: Rectangle { color: "#121212" }
-
-            Label {
-                text: qsTr("Welcome to Socket Chat!")
-                font.pixelSize: 20
-                color: "#FFFFFF"
-                anchors.horizontalCenter: parent.horizontalCenter
-                anchors.top: parent.top
-                anchors.topMargin: 70
-            }
 
             ColumnLayout {
                 anchors.centerIn: parent
                 spacing: 20
                 width: parent.width * 0.8
 
+                Label {
+                    text: qsTr("Create Account")
+                    font.pixelSize: 20
+                    color: "#FFFFFF"
+                    Layout.alignment: Qt.AlignHCenter
+                }
+
                 TextField {
                     id: regUsernameField
                     placeholderText: qsTr("Username")
                     Layout.fillWidth: true
+                    enabled: !authViewModel.isLoading
                     Material.accent: Material.Purple
                 }
 
@@ -116,6 +122,7 @@ ApplicationWindow {
                     placeholderText: qsTr("Password")
                     echoMode: TextInput.Password
                     Layout.fillWidth: true
+                    enabled: !authViewModel.isLoading
                     Material.accent: Material.Purple
                 }
 
@@ -124,51 +131,71 @@ ApplicationWindow {
                     placeholderText: qsTr("Confirm Password")
                     echoMode: TextInput.Password
                     Layout.fillWidth: true
+                    enabled: !authViewModel.isLoading
                     Material.accent: Material.Purple
                 }
 
                 Button {
-                    text: qsTr("Register")
+                    text: authViewModel.isLoading ? qsTr("Registering...") : qsTr("Register")
                     Layout.fillWidth: true
                     Material.background: Material.Purple
-                    enabled: regPasswordField.text === regConfirmPasswordField.text
+                    enabled: !authViewModel.isLoading && 
+                            regUsernameField.text && 
+                            regPasswordField.text && 
+                            regPasswordField.text === regConfirmPasswordField.text
                     onClicked: {
-                        authController.handleRegisterRequest(regUsernameField.text, regPasswordField.text)
+                        authController.requestRegister(regUsernameField.text, regPasswordField.text)
                     }
+                }
+
+                BusyIndicator {
+                    Layout.alignment: Qt.AlignHCenter
+                    visible: authViewModel.isLoading
+                    running: visible
                 }
             }
         }
     }
 
+    // Message display
+    Rectangle {
+        id: messageBox
+        anchors.bottom: parent.bottom
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.margins: 20
+        width: messageText.width + 40
+        height: messageText.height + 20
+        radius: 4
+        color: "#323232"
+        visible: authViewModel.message !== ""
+        opacity: 0.9
+
+        Label {
+            id: messageText
+            anchors.centerIn: parent
+            text: authViewModel.message
+            color: "white"
+        }
+    }
+    
     Connections {
-        target: authController
-        function onLoginResult(success, message) {
-            if (success) {
-                var component = Qt.createComponent("qrc:/src/views/MainWindow.qml")
-                if (component.status === Component.Ready) {
-                    var window = component.createObject(null)
-                    if (window) {
-                        window.show()
-                        authWindow.close()
-                    } else {
-                        console.error("Error creating window:", component.errorString())
-                    }
+        target: authViewModel
+        function onLoadingChanged() {
+            console.log("Loading state changed:", authViewModel.isLoading)
+            console.log("Current tab:", authViewModel.currentTab)
+        }
+        function onMessageChanged() {
+            console.log("Message changed:", authViewModel.message)
+        }
+        function onLoggedInChanged() {
+            if (authViewModel.isLoggedIn) {
+                var comp = Qt.createComponent("qrc:/src/views/MainWindow.qml")
+                if (comp.status === Component.Ready) {
+                    comp.createObject(null)
+                    authWindow.close()
                 } else {
-                    console.error("Error loading component:", component.errorString())
+                    console.log("MainWindow.qml load error:", comp.errorString())
                 }
-            } else {
-                console.error("Login failed:", message)
-            }
-        }
-    }
-
-    Connections {
-        target: authController
-        function onRegisterResult(success, message) {
-            if (success) {
-                bar.currentIndex = 0
-            } else {
-                console.error("Registration failed:", message)
             }
         }
     }

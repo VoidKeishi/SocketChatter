@@ -102,9 +102,11 @@ Page {
 
                 ListView {
                     Layout.fillWidth: true
+                    Layout.fillHeight: true
                     model: contactViewModel.sentRequests
                     delegate: ItemDelegate {
                         width: ListView.view.width
+                        height: 60 
                         contentItem: RowLayout {
                             spacing: 16
                             Image {

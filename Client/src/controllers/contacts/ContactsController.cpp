@@ -164,7 +164,7 @@ void ContactsController::handleFriendRequestCanceled(const QJsonObject& response
 void ContactsController::handleFriendRequestResponse(const QJsonObject& response) {
     bool success = response.value("success").toBool();
     QString message = response.value("message").toString();
-    QString username = response.value("username").toString();
+    QString username = response.value("to").toString();
     
     if (success) {
         m_viewModel->removeReceivedRequest(username);

@@ -22,7 +22,7 @@ public:
         QString formatted = doc.toJson(QJsonDocument::Indented);
         log("JSON", prefix + ":\n" + formatted);
     }
-    
+
 private:
     static void log(const QString& level, const QString& message) {
         QString timestamp = QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss.zzz");

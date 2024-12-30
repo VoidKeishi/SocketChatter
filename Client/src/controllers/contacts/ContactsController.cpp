@@ -129,7 +129,7 @@ void ContactsController::handleReceivedListFetched(const QJsonObject& response) 
     QStringList receivedRequests;
     QJsonArray receivedArray = response.value("requests").toArray();
     for (const QJsonValue& value : receivedArray) {
-        receivedRequests << value.toObject().value("from").toString();
+        receivedRequests << value.toString(); 
     }
     m_viewModel->setReceivedRequests(receivedRequests);
 }
@@ -180,7 +180,7 @@ void ContactsController::handleFriendDeleted(const QJsonObject& response) {
     QString message = response.value("message").toString();
     
     if (success) {
-        QString username = response.value("username").toString();
+        QString username = response.value("to").toString();
         m_viewModel->removeFriend(username);
     } else {
         qDebug() << "Error: " << message;

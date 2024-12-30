@@ -1,6 +1,8 @@
 #include "ContactHandler.h"
+#include "../core/ConnectionManager.h"
 #include <QDebug>
 #include <QJsonArray>
+#include "../utils/logger.h"
 
 ContactHandler::ContactHandler(DatabaseManager* db)
     : BaseHandler(nullptr), contactRepo(db) 
@@ -115,14 +117,13 @@ void ContactHandler::handleGetPendingRequests(const QJsonObject& request) {
     auto requests = contactRepo.getPendingRequests(username);
     
     QJsonArray requestArray;
-    for (const auto& request : requests) {
-        requestArray.append(QJsonObject{
-            {"from", request},
-        });
+    for (const auto& req : requests) {
+        requestArray.append(req);
     }
     
     emit responseReady({
         {"type", "FETCH_RECEIVED_REQUESTS_RESPONSE"},
+        {"timestamp", static_cast<int>(QDateTime::currentSecsSinceEpoch())},
         {"payload", QJsonObject{
             {"success", true},
             {"requests", requestArray}
@@ -184,6 +185,23 @@ void ContactHandler::handleDeleteFriend(const QJsonObject& request) {
                     {"to", to}
                 }}
             });
+
+            // Check if the 'to' user is connected
+            ClientHandler* toClient = ConnectionManager::instance()->getClientHandler(to);
+            if (toClient) {
+                QJsonObject notification = {
+                    {"type", "FRIEND_DELETED_NOTIFICATION"},
+                    {"timestamp", static_cast<int>(QDateTime::currentSecsSinceEpoch())},
+                    {"payload", QJsonObject{
+                        {"from", from},
+                        {"message", QString("%1 has removed you from their friends list.").arg(from)}
+                    }}
+                };
+                toClient->sendResponse(notification);
+                Logger::info(QString("Sent FRIEND_DELETED_NOTIFICATION to %1").arg(to));
+            } else {
+                Logger::info(QString("User %1 is not connected. Notification not sent.").arg(to));
+            }
         } else {
             emit responseReady({
                 {"type", "FRIEND_DELETED_RESPONSE"},

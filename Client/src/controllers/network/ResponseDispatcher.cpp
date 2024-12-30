@@ -2,6 +2,7 @@
 #include <QJsonDocument>
 #include <QJsonParseError>
 #include <QDebug>
+#include "../utils/logger.h"
 
 ResponseDispatcher::ResponseDispatcher(QObject *parent) : QObject(parent) {}
 
@@ -30,6 +31,7 @@ void ResponseDispatcher::dispatchResponse(const QByteArray& data) {
     QString type = response["type"].toString();
     QJsonObject payload = response["payload"].toObject();
 
+    Logger::json("Received response", response);
     qDebug() << "Dispatching response type:" << type;
 
     for (IController* controller : controllers) {

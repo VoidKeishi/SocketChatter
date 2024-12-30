@@ -1,4 +1,5 @@
 #include "ClientHandler.h"
+#include "ConnectionManager.h"
 #include <QJsonDocument>
 #include <QJsonParseError>
 #include <QDebug>
@@ -58,15 +59,15 @@ void ClientHandler::onReadyRead() {
 }
 
 void ClientHandler::onDisconnected() {
-    emit disconnected();
+    if (!m_username.isEmpty()) {
+        ConnectionManager::instance()->removeClient(m_username);
+        Logger::info(QString("User %1 disconnected").arg(m_username));
+    }
+    clientSocket->deleteLater();
 }
 
 void ClientHandler::processRequest(const QJsonObject& request) {
     dispatcher->dispatch(request);
-}
-
-void ClientHandler::setUsername (const QString& user) {
-    username = user;
 }
 
 void ClientHandler::start() {
@@ -88,4 +89,10 @@ void ClientHandler::sendResponse(const QJsonObject& response) {
     clientSocket->write(data);
     clientSocket->flush();
     Logger::json("Sent response", response);
+}
+
+void ClientHandler::onLoginSuccess(const QString& username) {
+    m_username = username;
+    ConnectionManager::instance()->addClient(username, this);
+    Logger::info(QString("User %1 connected").arg(username));
 }

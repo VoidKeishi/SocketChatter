@@ -1,6 +1,7 @@
 #include "NetworkController.h"
 #include <QDebug>
 #include <QJsonDocument>
+#include "../utils/logger.h"
 
 NetworkController* NetworkController::m_instance = nullptr;
 
@@ -34,7 +35,7 @@ void NetworkController::onConnected() {
 }
 
 void NetworkController::sendData(const QByteArray &data) {
-    qDebug() << "Sending data:" << data;
+    Logger::json("Sending data", QJsonDocument::fromJson(data).object());
     if (socket->state() == QAbstractSocket::ConnectedState) {
         socket->write(data);
         socket->flush();

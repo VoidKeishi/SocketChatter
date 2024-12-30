@@ -54,6 +54,17 @@ bool ContactRepository::updateRequestStatus(const QString& from, const QString& 
         }
     }
 
+    // Delete the friend request if it is accepted or rejected
+    if (status == "accepted" || status == "rejected") {
+        query.prepare("DELETE FROM friend_requests WHERE from_user = ? AND to_user = ?");
+        query.addBindValue(from);
+        query.addBindValue(to);
+        if (!query.exec()) {
+            db->database().rollback();
+            return false;
+        }
+    }
+
     return db->database().commit();
 }
 

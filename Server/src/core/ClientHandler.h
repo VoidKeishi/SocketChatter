@@ -13,7 +13,7 @@ class ClientHandler : public QObject {
 
 public:
     explicit ClientHandler(QTcpSocket* socket, QObject* parent = nullptr);
-    void setUsername(const QString& user);
+    void sendResponse(const QJsonObject& response);
 
 signals:
     void disconnected();
@@ -26,6 +26,7 @@ public slots:
 private slots:
     void onReadyRead();
     void onDisconnected();
+    void onLoginSuccess(const QString& username);
 
 private:
     QTcpSocket* clientSocket;
@@ -33,9 +34,8 @@ private:
     RequestDispatcher* dispatcher;
     AuthHandler* authHandler;
     ContactHandler* contactHandler;
-    QString username;
+    QString m_username;
     void processRequest(const QJsonObject& request);
-    void sendResponse(const QJsonObject& response);
 };
 
 #endif // CLIENTHANDLER_H

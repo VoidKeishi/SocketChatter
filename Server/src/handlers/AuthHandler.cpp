@@ -7,7 +7,6 @@ AuthHandler::AuthHandler(DatabaseManager* db)
         {"LOGIN_REQUEST", [this](const QJsonObject& p) { handleLogin(p); }},
         {"REGISTER_REQUEST", [this](const QJsonObject& p) { handleRegister(p); }}
     };
-    qDebug() << "AuthHandler initialized with handlers:" << handlers.keys();
 }
 
 void AuthHandler::handleLogin(const QJsonObject& request) {

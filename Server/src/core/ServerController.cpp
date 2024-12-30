@@ -40,6 +40,7 @@ void ServerController::onNewConnection() {
         connect(thread, &QThread::finished, thread, &QThread::deleteLater);
         connect(clientHandler, &ClientHandler::finished, clientHandler, &ClientHandler::deleteLater);
         
+        // pass ip address to client handler
         thread->start();
     }
 }

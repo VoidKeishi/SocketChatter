@@ -12,6 +12,7 @@ private:
     void handleSendRequest(const QJsonObject& request);
     void handleCancelSentRequest(const QJsonObject& request);
     void handleResponseRequest(const QJsonObject& request);
+    void handleDeleteFriend(const QJsonObject& request);
     // Handle fetch data requests
     void handleGetFriendList(const QJsonObject& request);
     void handleGetPendingRequests(const QJsonObject& request);

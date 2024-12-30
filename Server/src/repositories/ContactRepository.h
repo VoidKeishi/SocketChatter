@@ -10,6 +10,7 @@ public:
     bool createFriendRequest(const QString& from, const QString& to);
     bool updateRequestStatus(const QString& from, const QString& to, const QString& status);
     bool addFriendship(const QString& user1, const QString& user2);
+    bool deleteFriendship(const QString& user1, const QString& user2);
     // Getters
     QVector<QString> getFriendList(const QString& username);
     QVector<QString> getSentRequestList(const QString& username);

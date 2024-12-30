@@ -70,7 +70,6 @@ void ClientHandler::setUsername (const QString& user) {
 }
 
 void ClientHandler::start() {
-    qDebug() << "New ClientHandler started";
 }
 
 void ClientHandler::cleanup() {

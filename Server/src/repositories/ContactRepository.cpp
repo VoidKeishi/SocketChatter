@@ -126,3 +126,17 @@ bool ContactRepository::addFriendship(const QString& user1, const QString& user2
     
     return query.exec();
 }
+
+bool ContactRepository::deleteFriendship(const QString& user1, const QString& user2) {
+    QSqlQuery query(db->database());
+    query.prepare(
+        "DELETE FROM friends WHERE "
+        "(user1 = ? AND user2 = ?) OR (user1 = ? AND user2 = ?)"
+    );
+    query.addBindValue(user1);
+    query.addBindValue(user2);
+    query.addBindValue(user2);
+    query.addBindValue(user1);
+    
+    return query.exec();
+}

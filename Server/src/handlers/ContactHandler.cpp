@@ -15,6 +15,7 @@ ContactHandler::ContactHandler(DatabaseManager* db)
         {"FRIEND_REQUEST_CANCEL", [this](const QJsonObject& p) { handleCancelSentRequest(p); }},
         {"FRIEND_REQUESTS_GET", [this](const QJsonObject& p) { handleGetPendingRequests(p); }},
         {"RESPOND_TO_FRIEND_REQUEST", [this](const QJsonObject& p) { handleResponseRequest(p); }},
+        {"DELETE_FRIEND_REQUEST", [this](const QJsonObject& p) { handleDeleteFriend(p); }},
     };
 }
 
@@ -160,6 +161,46 @@ void ContactHandler::handleResponseRequest(const QJsonObject& request) {
             {"payload", QJsonObject{
                 {"success", false},
                 {"message", "Failed to process friend request"},
+                {"from", from},
+                {"to", to}
+            }}
+        });
+    }
+}
+
+void ContactHandler::handleDeleteFriend(const QJsonObject& request) {
+    QJsonObject payload = request["payload"].toObject();
+    QString from = payload["from"].toString();
+    QString to = payload["to"].toString();
+    
+    if (contactRepo.areFriends(from, to)) {
+        if (contactRepo.deleteFriendship(from, to)) {
+            emit responseReady({
+                {"type", "FRIEND_DELETED_RESPONSE"},
+                {"payload", QJsonObject{
+                    {"success", true},
+                    {"message", "Friend deleted"},
+                    {"from", from},
+                    {"to", to}
+                }}
+            });
+        } else {
+            emit responseReady({
+                {"type", "FRIEND_DELETED_RESPONSE"},
+                {"payload", QJsonObject{
+                    {"success", false},
+                    {"message", "Failed to delete friend"},
+                    {"from", from},
+                    {"to", to}
+                }}
+            });
+        }
+    } else {
+        emit responseReady({
+            {"type", "FRIEND_DELETED_RESPONSE"},
+            {"payload", QJsonObject{
+                {"success", false},
+                {"message", "Not friends with user"},
                 {"from", from},
                 {"to", to}
             }}

@@ -5,7 +5,7 @@ project(Client)
 set(CMAKE_CXX_STANDARD 11)
 
 # Set the path to your Qt installation
-set(CMAKE_PREFIX_PATH "/home/voidkeishi/Qt/6.8.1/gcc_64")
+set(CMAKE_PREFIX_PATH "$ENV{HOME}/Qt/6.8.1/gcc_64")
 
 # Enable Qt features
 set(CMAKE_AUTOMOC ON)

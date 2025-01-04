@@ -1,10 +1,16 @@
-#include "ResponseDispatcher.h"
 #include <QJsonDocument>
 #include <QJsonParseError>
 #include <QDebug>
-#include "../utils/logger.h"
 
-ResponseDispatcher::ResponseDispatcher(QObject *parent) : QObject(parent) {}
+#include "ResponseDispatcher.h"
+#include "NetworkController.h"
+#include "../utils/Logger.h"
+
+ResponseDispatcher::ResponseDispatcher(QObject *parent) : QObject(parent) {
+    // Connect to NetworkController's rawDataReceived signal
+    connect(NetworkController::instance(), &NetworkController::rawDataReceived,
+            this, &ResponseDispatcher::onRawDataReceived);
+}
 
 void ResponseDispatcher::registerController(IController* controller) {
     if (!controller) {
@@ -28,11 +34,11 @@ void ResponseDispatcher::dispatchResponse(const QByteArray& data) {
     }
 
     QJsonObject response = doc.object();
+    Logger::json("Received response", response);
+    
     QString type = response["type"].toString();
     QJsonObject payload = response["payload"].toObject();
-
-    Logger::json("Received response", response);
-    qDebug() << "Dispatching response type:" << type;
+    Logger::debug("Dispatching response type: " + type);
 
     for (IController* controller : controllers) {
         if (controller->canHandle(type)) {
@@ -41,5 +47,5 @@ void ResponseDispatcher::dispatchResponse(const QByteArray& data) {
         }
     }
 
-    qWarning() << "No handler found for response type:" << type;
+    Logger::error("No controller found for response type: " + type);
 }

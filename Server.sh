@@ -1,4 +1,4 @@
 cd Server/build
 cmake ..
 make
-./Server
+./Server JSON

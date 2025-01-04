@@ -1,0 +1,32 @@
+.
+├── core
+│   ├── ClientHandler.cpp
+│   ├── ClientHandler.h
+│   ├── ConnectionManager.cpp
+│   ├── ConnectionManager.h
+│   ├── RequestDispatcher.cpp
+│   ├── RequestDispatcher.h
+│   ├── ServerController.cpp
+│   └── ServerController.h
+├── database
+│   ├── DatabaseManager.cpp
+│   ├── DatabaseManager.h
+│   └── schema.sql
+├── handlers
+│   ├── AuthHandler.cpp
+│   ├── AuthHandler.h
+│   ├── BaseHandler.h
+│   ├── ContactHandler.cpp
+│   ├── ContactHandler.h
+│   ├── MessageHandler.cpp
+│   └── MessageHandler.h
+├── main.cpp
+├── repositories
+│   ├── ContactRepository.cpp
+│   ├── ContactRepository.h
+│   ├── GroupRepository.h
+│   ├── MessageRepository.h
+│   ├── UserRepository.cpp
+│   └── UserRepository.h
+└── utils
+    └── logger.h

@@ -79,14 +79,8 @@ ApplicationWindow {
                     Material.background: Material.Purple
                     enabled: !authViewModel.isLoading && usernameField.text && passwordField.text
                     onClicked: {
-                        authController.requestLogin(usernameField.text, passwordField.text)
+                        authViewModel.sendRequestLogin(usernameField.text, passwordField.text)
                     }
-                }
-
-                BusyIndicator {
-                    Layout.alignment: Qt.AlignHCenter
-                    visible: authViewModel.isLoading
-                    running: visible
                 }
             }
         }
@@ -144,14 +138,8 @@ ApplicationWindow {
                             regPasswordField.text && 
                             regPasswordField.text === regConfirmPasswordField.text
                     onClicked: {
-                        authController.requestRegister(regUsernameField.text, regPasswordField.text)
+                        authViewModel.sendRequestRegister(regUsernameField.text, regPasswordField.text)
                     }
-                }
-
-                BusyIndicator {
-                    Layout.alignment: Qt.AlignHCenter
-                    visible: authViewModel.isLoading
-                    running: visible
                 }
             }
         }
@@ -180,13 +168,6 @@ ApplicationWindow {
     
     Connections {
         target: authViewModel
-        function onLoadingChanged() {
-            console.log("Loading state changed:", authViewModel.isLoading)
-            console.log("Current tab:", authViewModel.currentTab)
-        }
-        function onMessageChanged() {
-            console.log("Message changed:", authViewModel.message)
-        }
         function onLoggedInChanged() {
             if (authViewModel.isLoggedIn) {
                 var comp = Qt.createComponent("qrc:/src/views/MainWindow.qml")

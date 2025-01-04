@@ -1,0 +1,60 @@
+├── controllers
+│   ├── auth
+│   │   ├── AuthController.cpp
+│   │   └── AuthController.h
+│   ├── contacts
+│   │   ├── ContactsController.cpp
+│   │   ├── ContactsController.h
+│   │   ├── MessagesController.cpp
+│   │   └── MessagesController.h
+│   ├── ControllerManager.cpp
+│   ├── ControllerManager.h
+│   ├── IController.h
+│   ├── network
+│   │   ├── NetworkController.cpp
+│   │   ├── NetworkController.h
+│   │   ├── ResponseDispatcher.cpp
+│   │   └── ResponseDispatcher.h
+│   ├── session
+│   │   ├── UserManager.cpp
+│   │   └── UserManager.h
+│   └── utils
+│       ├── HashUtility.h
+│       ├── logger.h
+│       ├── LoggingCategories.cpp
+│       ├── LoggingCategories.h
+│       └── RequestFactory.h
+├── main.cpp
+├── viewmodels
+│   ├── AuthViewModel.cpp
+│   ├── AuthViewModel.h
+│   ├── ContactViewModel.cpp
+│   ├── ContactViewModel.h
+│   ├── ConversationViewModel.cpp
+│   └── ConversationViewModel.h
+└── views
+    ├── assets
+    │   ├── arrow_back.png
+    │   ├── cancel.png
+    │   ├── ChatIcon.png
+    │   ├── check_circle.png
+    │   ├── delete.png
+    │   ├── man0.png
+    │   ├── man1.png
+    │   ├── man2.png
+    │   ├── man3.png
+    │   ├── man4.png
+    │   ├── person_add.png
+    │   ├── person_outline.png
+    │   ├── person.png
+    │   ├── remove_circle.png
+    │   ├── woman0.png
+    │   ├── woman1.png
+    │   ├── woman2.png
+    │   ├── woman3.png
+    │   └── woman4.png
+    ├── AuthWindow.qml
+    ├── ContactPage.qml
+    ├── ConversationPage.qml
+    ├── MainWindow.qml
+    └── ManageContactsPage.qml

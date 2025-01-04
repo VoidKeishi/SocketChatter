@@ -1,7 +1,7 @@
 #include "NetworkController.h"
 #include <QDebug>
 #include <QJsonDocument>
-#include "../utils/logger.h"
+#include "../utils/Logger.h"
 
 NetworkController* NetworkController::m_instance = nullptr;
 

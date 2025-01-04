@@ -3,18 +3,16 @@
 
 AuthViewModel::AuthViewModel(QObject* parent)
     : QObject(parent)
-    , m_status(AuthStatus::Idle)
     , m_loggedIn(false)
     , m_registered(false)
     , m_currentTab(0)
 {
 }
 
-void AuthViewModel::setLoading(bool loading) {
-    AuthStatus newStatus = loading ? AuthStatus::Loading : AuthStatus::Idle;
-    if (m_status != newStatus) {
-        m_status = newStatus;
-        emit loadingChanged();
+void AuthViewModel::setRegistered(bool registered) {
+    if (m_registered != registered) {
+        m_registered = registered;
+        emit registeredChanged();
     }
 }
 
@@ -32,13 +30,6 @@ void AuthViewModel::setMessage(const QString& message) {
     }
 }
 
-void AuthViewModel::setRegistered(bool registered) {
-    if (m_registered != registered) {
-        m_registered = registered;
-        emit registeredChanged();
-    }
-}
-
 void AuthViewModel::setCurrentTab(int tab) {
     if (m_currentTab != tab) {
         m_currentTab = tab;
@@ -47,9 +38,18 @@ void AuthViewModel::setCurrentTab(int tab) {
 }
 
 void AuthViewModel::reset() {
-    setLoading(false);
+    setRegistered(false);
     setLoggedIn(false);
     setMessage("");
-    setRegistered(false);
     setCurrentTab(0);
+}
+
+void AuthViewModel::sendRequestLogin(const QString& username, const QString& password) {
+    qDebug() << "Sending login request for user: " << username;
+    emit authActionRequested(AuthAction::Login, username, password);
+}
+
+void AuthViewModel::sendRequestRegister(const QString& username, const QString& password) {
+    qDebug() << "Sending register request for user: " << username;
+    emit authActionRequested(AuthAction::Register, username, password);
 }

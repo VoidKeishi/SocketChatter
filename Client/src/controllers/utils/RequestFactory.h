@@ -5,7 +5,6 @@
 #include <QString>
 #include <QDateTime>
 #include <QJsonDocument>
-#include "../session/UserManager.h"
 
 namespace RequestFactory
 {
@@ -78,37 +77,57 @@ namespace RequestFactory
         return QJsonDocument(request).toJson(QJsonDocument::Compact) + '\n';
     }
 
-    inline QByteArray createFetchFriendsListRequest()
+    inline QByteArray createFetchFriendsListRequest(const QString& username)
     {
         QJsonObject request = {
             {"type", "FETCH_FRIEND_LIST"},
             {"timestamp", QDateTime::currentSecsSinceEpoch()},
             {"payload", QJsonObject{
-                            {"username", UserManager::instance()->currentUser()}}}};
+                            {"username", username}}}};
         return QJsonDocument(request).toJson(QJsonDocument::Compact) + '\n';
     }
 
-    inline QByteArray createFetchSentRequestsRequest()
+    inline QByteArray createFetchSentRequestsRequest(const QString& username)
     {
         QJsonObject request = {
             {"type", "FETCH_SENT_REQUESTS"},
             {"timestamp", QDateTime::currentSecsSinceEpoch()},
             {"payload", QJsonObject{
-                            {"username", UserManager::instance()->currentUser()}}}};
+                            {"username", username}}}};
         return QJsonDocument(request).toJson(QJsonDocument::Compact) + '\n';
     }
 
-    inline QByteArray createFetchReceivedRequestsRequest()
+    inline QByteArray createFetchReceivedRequestsRequest(const QString& username)
     {
         QJsonObject request = {
             {"type", "FETCH_RECEIVED_REQUESTS"},
             {"timestamp", QDateTime::currentSecsSinceEpoch()},
             {"payload", QJsonObject{
-                            {"username", UserManager::instance()->currentUser()}}}};
+                            {"username", username}}}};
         return QJsonDocument(request).toJson(QJsonDocument::Compact) + '\n';
     }
 
     // Messages requests
+    inline QByteArray createSendMessageRequest(const QString &contact, const QString &content)
+    {
+        QJsonObject request = {
+            {"type", "SEND_MESSAGE"},
+            {"timestamp", QDateTime::currentSecsSinceEpoch()},
+            {"payload", QJsonObject{
+                            {"contact", contact},
+                            {"content", content}}}};
+        return QJsonDocument(request).toJson(QJsonDocument::Compact) + '\n';
+    }
+
+    inline QByteArray createFetchMessagesRequest(const QString &contact)
+    {
+        QJsonObject request = {
+            {"type", "FETCH_MESSAGES"},
+            {"timestamp", QDateTime::currentSecsSinceEpoch()},
+            {"payload", QJsonObject{
+                            {"contact", contact}}}};
+        return QJsonDocument(request).toJson(QJsonDocument::Compact) + '\n';
+    }
 
 }
 

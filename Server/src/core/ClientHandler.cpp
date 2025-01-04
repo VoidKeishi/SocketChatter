@@ -3,7 +3,7 @@
 #include <QJsonDocument>
 #include <QJsonParseError>
 #include <QDebug>
-#include "../utils/logger.h"
+#include "../utils/Logger.h"
 
 
 ClientHandler::ClientHandler(QTcpSocket* socket, QObject* parent) 

@@ -23,7 +23,7 @@ Page {
     }
 
     Component.onCompleted: {
-        conversationViewModel.setRecipient(inConversationWith)
+        conversationViewModel.setCurrentContact(inConversationWith)
     }
 
     ColumnLayout {
@@ -74,8 +74,6 @@ Page {
                             source: !conversationDelegate.sentByMe 
                                 ? "qrc:/src/views/assets/" + "man1" + ".png" 
                                 : ""
-                                // ? "qrc:/src/views/assets/" + conversationDelegate.author.replace(" ", "_").toLowerCase() + ".png" 
-                                // : ""
                             fillMode: Image.PreserveAspectFit
                         }
                     }
@@ -174,5 +172,8 @@ Page {
                 }
             }
         }
+    }
+    onInConversationWithChanged: {
+        conversationViewModel.setCurrentContact(inConversationWith)
     }
 }

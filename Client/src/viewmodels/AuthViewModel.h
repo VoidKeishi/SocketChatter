@@ -1,49 +1,46 @@
 #pragma once
 #include <QObject>
 
-enum class AuthStatus {
-    Idle,
-    Loading,
-    Success,
-    Error
+enum class AuthAction {
+    Login,
+    Register,
 };
 
 class AuthViewModel : public QObject {
     Q_OBJECT
-    Q_PROPERTY(bool isLoading READ isLoading NOTIFY loadingChanged)
+    Q_PROPERTY(bool isRegistered READ isRegistered NOTIFY registeredChanged)
     Q_PROPERTY(bool isLoggedIn READ isLoggedIn NOTIFY loggedInChanged)
     Q_PROPERTY(QString message READ message NOTIFY messageChanged)
-    Q_PROPERTY(bool isRegistered READ isRegistered NOTIFY registeredChanged)
     Q_PROPERTY(int currentTab READ currentTab WRITE setCurrentTab NOTIFY currentTabChanged)
 
 public:
     explicit AuthViewModel(QObject* parent = nullptr);
-
-    bool isLoading() const { return m_status == AuthStatus::Loading; }
+    bool isRegistered() const { return m_registered; }
     bool isLoggedIn() const { return m_loggedIn; }
     QString message() const { return m_message; }
-    bool isRegistered() const { return m_registered; }
     int currentTab() const { return m_currentTab; }
 
 public slots:
-    void setLoading(bool loading);
+    // Setters
+    void setRegistered(bool registered);
     void setLoggedIn(bool loggedIn);
     void setMessage(const QString& message);
-    void setRegistered(bool registered);
     void setCurrentTab(int tab);
     void reset();
+    // Methods called by View
+    void sendRequestLogin(const QString& username, const QString& password);
+    void sendRequestRegister(const QString& username, const QString& password);
 
 signals:
-    void loadingChanged();
+    void registeredChanged();
     void loggedInChanged();
     void messageChanged();
-    void registeredChanged();
     void currentTabChanged();
+    void authActionRequested(AuthAction action, const QString& username, const QString& password);
 
 private:
-    AuthStatus m_status;
+    bool m_registered;
     bool m_loggedIn;
     QString m_message;
-    bool m_registered;
     int m_currentTab;
 };

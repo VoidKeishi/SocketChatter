@@ -1,9 +1,14 @@
 #pragma once
-#include "../IController.h"
-#include "../../viewmodels/AuthViewModel.h"
+
 #include <QObject>
 #include <QMap>
 #include <functional>
+
+#include "AuthRequestSender.h"
+#include "AuthResponseHandler.h"
+#include "../IController.h"
+#include "../../viewmodels/AuthViewModel.h"
+
 
 class AuthController : public QObject, public IController {
     Q_OBJECT
@@ -15,17 +20,12 @@ public:
     void handle(const QString& type, const QJsonObject& payload) override;
 
 public slots:
-    void requestLogin(const QString& username, const QString& password);
-    void requestRegister(const QString& username, const QString& password);
-    void logout();
-
-signals:
-    void sendRequest(const QByteArray& data);
+    void handleAuthAction(AuthAction action, const QString& username, const QString& password);
 
 private:
     AuthViewModel* m_viewModel;
+    AuthRequestSender* m_requestSender;
+    AuthResponseHandler* m_responseHandler;
     QMap<QString, std::function<void(const QJsonObject&)>> handlers;
 
-    void handleLoginResponse(const QJsonObject& response);
-    void handleRegisterResponse(const QJsonObject& response);
 };

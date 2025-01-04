@@ -1,5 +1,7 @@
-#include "AuthHandler.h"
 #include <QDebug>
+
+#include "AuthHandler.h"
+#include "../utils/Logger.h"
 
 AuthHandler::AuthHandler(DatabaseManager* db) 
     : BaseHandler(nullptr), userRepo(db) {
@@ -14,7 +16,7 @@ void AuthHandler::handleLogin(const QJsonObject& request) {
     QString username = payload["username"].toString();
     QString passwordHash = payload["password"].toString();
 
-    qDebug() << "Processing login for user:" << username;
+    Logger::debug(QString("Processing login for user: %1").arg(username));
 
     if (userRepo.validateUser(username, passwordHash)) {
         emit responseReady({
@@ -43,7 +45,7 @@ void AuthHandler::handleRegister(const QJsonObject& request) {
     QString username = payload["username"].toString();
     QString passwordHash = payload["password"].toString();
 
-    qDebug() << "Processing registration for user:" << username;
+    Logger::debug(QString("Processing registration for user: %1").arg(username));
     
     if (userRepo.userExists(username)) {
         emit responseReady({

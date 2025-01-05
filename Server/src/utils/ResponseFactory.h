@@ -135,5 +135,26 @@ namespace ResponseFactory
             }}
         };
     }
-            
+    
+    inline QJsonObject createSendMessageResponse(const QString& sender, const QString& receiver, const QString& content) {
+        return {
+            {"type", "SEND_MESSAGE_RESPONSE"},
+            {"timestamp", QDateTime::currentSecsSinceEpoch()},
+            {"payload", QJsonObject{
+                {"sender", sender},
+                {"receiver", receiver},
+                {"content", content},
+                {"success", true}}}};
+    }
+
+    inline QJsonObject createFetchMessagesResponse(const QString& sender, const QString& receiver, const QString& messagesString) {
+        return {
+            {"type", "FETCH_MESSAGES_RESPONSE"},
+            {"timestamp", QDateTime::currentSecsSinceEpoch()},
+            {"payload", QJsonObject{
+                {"sender", sender},
+                {"receiver", receiver},
+                {"messages", QJsonDocument::fromJson(messagesString.toUtf8()).array()}}}};
+    }
+
 }

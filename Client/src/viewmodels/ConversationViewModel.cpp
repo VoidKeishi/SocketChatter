@@ -3,33 +3,41 @@
 ConversationViewModel::ConversationViewModel(QObject* parent)
     : QAbstractListModel(parent) {}
 
-void ConversationViewModel::setCurrentContact(const QString& contact) {
-    if (m_currentContact != contact) {
-        m_currentContact = contact;
-        emit currentContactChanged();
+void ConversationViewModel::setCurrentReceiver(const QString& receiver) {
+    if (m_currentReceiver != receiver) {
+        m_currentReceiver = receiver;
+        emit currentReceiverChanged();
         fetchMessages();
     }
 }
 
-void ConversationViewModel::sendMessage(const QString& content) {
-    emit sendMessageRequested(m_currentContact, content);
+void ConversationViewModel::sendMessage(const QString& sender, const QString& receiver, const QString& content) {
+    emit sendMessageRequested(sender, receiver, content);
 }
 
 void ConversationViewModel::fetchMessages() {
-    emit fetchMessagesRequested(m_currentContact);
+    emit fetchMessagesRequested(UserManager::instance()->m_currentUser, m_currentReceiver);
 }
 
-void ConversationViewModel::onMessageReceived(const QString& author, const QString& content, const QDateTime& timestamp) {
-    // m_messages.append({author, content, timestamp, author == m_currentContact});
-    // emit messagesChanged();
+void ConversationViewModel::onMessageReceived(
+    const QString& sender,
+    const QString& receiver,
+    const QString& content,
+    const QDateTime& timestamp,
+    const QString& id) 
+{
     beginInsertRows(QModelIndex(), m_messages.size(), m_messages.size());
-    m_messages.append({author, content, timestamp, author == m_currentContact});
+    m_messages.append({
+        id.isEmpty() ? QString::number(QDateTime::currentMSecsSinceEpoch()) : id,
+        sender,
+        receiver,
+        content,
+        timestamp
+    });
     endInsertRows();
 }
 
 void ConversationViewModel::onMessagesFetched(const QVector<Message>& messages) {
-    // m_messages = messages;
-    // emit messagesChanged();
     beginResetModel();
     m_messages = messages;
     endResetModel();

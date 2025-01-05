@@ -30,9 +30,9 @@ CREATE TABLE IF NOT EXISTS friends (
 CREATE TABLE IF NOT EXISTS messages (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     sender TEXT NOT NULL,
-    recipient TEXT NOT NULL,
+    receiver TEXT NOT NULL,
     content TEXT NOT NULL,
     timestamp BIGINT NOT NULL,
     FOREIGN KEY(sender) REFERENCES users(username),
-    FOREIGN KEY(recipient) REFERENCES users(username)
+    FOREIGN KEY(receiver) REFERENCES users(username)
 );

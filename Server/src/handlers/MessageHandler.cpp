@@ -12,25 +12,25 @@ MessageHandler::MessageHandler(DatabaseManager* db)
 
 void MessageHandler::handleSendMessage(const QJsonObject& request) {
     QJsonObject payload = request["payload"].toObject();
-    QString sender = request["sender"].toString();  
-    QString targetContact = payload["contact"].toString();
+    QString sender = payload["sender"].toString();  // Changed from request to payload
+    QString receiver = payload["receiver"].toString(); // Changed from targetContact
     QString content = payload["content"].toString();
     qint64 timestamp = request["timestamp"].toInteger();
 
-    Logger::debug(QString("Processing message from %1 to %2").arg(sender).arg(targetContact));
+    Logger::debug(QString("Processing message from %1 to %2").arg(sender).arg(receiver));
 
-    // Always store the message first
-    if (messageRepo.storeMessage(sender, targetContact, content, timestamp)) {
+    // store the message first
+    if (messageRepo.storeMessage(sender, receiver, content, timestamp)) {
         Logger::info("Message stored in database");
         
-        // Then attempt delivery if user is online
-        attemptDelivery(targetContact, request);
+        // if user is online
+        attemptDelivery(receiver, request);
         
-        // Send acknowledgment to sender
-        emit responseReady(ResponseFactory::createSendMessageResponse(targetContact, "Message sent"));
+        // ack sender
+        emit responseReady(ResponseFactory::createSendMessageResponse(sender, receiver, content));
     } else {
         Logger::error("Failed to store message in database");
-        emit responseReady(ResponseFactory::createSendMessageResponse(targetContact, "Failed to send message"));
+        emit responseReady(ResponseFactory::createSendMessageResponse(sender, receiver, "Failed to send message"));
     }
 }
 
@@ -51,19 +51,18 @@ void MessageHandler::attemptDelivery(const QString& to, const QJsonObject& messa
 
 void MessageHandler::handleFetchMessages(const QJsonObject& request) {
     QJsonObject payload = request["payload"].toObject();
-    QString requester = request["sender"].toString();
-    QString contact = payload["contact"].toString();
+    QString sender = payload["sender"].toString();
+    QString receiver = payload["receiver"].toString();
     
     Logger::debug(QString("Fetching messages between %1 and %2")
-                 .arg(requester).arg(contact));
+                 .arg(sender).arg(receiver));
 
-    // Fetch messages from database
-    QJsonArray messages = messageRepo.getMessages(requester, contact);
+    // fetch for new msg
+    QJsonArray messages = messageRepo.getMessages(sender, receiver);
     QString messagesString = QString(QJsonDocument(messages).toJson(QJsonDocument::Compact));
-
     
-    // Send messages back to requester
-    QJsonObject response = ResponseFactory::createFetchMessagesResponse(contact, messagesString);
+    // send the fetched data to user
+    QJsonObject response = ResponseFactory::createFetchMessagesResponse(sender, receiver, messagesString);
     emit responseReady(response);
 }
 

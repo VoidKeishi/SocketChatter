@@ -25,7 +25,7 @@ Page {
     }
 
     Component.onCompleted: {
-        conversationViewModel.setCurrentReceiver(inConversationWith)
+        conversationViewModel.setCurrentContact(inConversationWith)
     }
 
     ColumnLayout {
@@ -47,9 +47,7 @@ Page {
                 spacing: 6
                 width: listView.width
                 
-                // Updated to match QmlMessage properties
-                required property string sender
-                required property string receiver
+                required property string author
                 required property string content 
                 required property date timestamp
                 required property bool sentByMe
@@ -170,11 +168,7 @@ Page {
                     Layout.preferredHeight: 50
                     Material.background: Material.Purple
                     onClicked: {
-                        conversationViewModel.sendMessage(
-                            conversationViewModel.getCurrentUser(), 
-                            conversationPage.inConversationWith, 
-                            messageField.text
-                        )
+                        conversationViewModel.sendMessage(messageField.text)
                         messageField.text = ""
                     }
                 }
@@ -182,6 +176,6 @@ Page {
         }
     }
     onInConversationWithChanged: {
-        conversationViewModel.setCurrentReceiver(inConversationWith)
+        conversationViewModel.setCurrentContact(inConversationWith)
     }
 }

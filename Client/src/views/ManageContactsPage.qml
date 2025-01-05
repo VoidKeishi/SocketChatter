@@ -10,18 +10,6 @@ Page {
     Material.theme: Material.Dark
     Material.accent: Material.Purple
 
-    // Timer {
-    //     id: fetchTimer
-    //     interval: 5000 // 5000 ms = 5 seconds
-    //     repeat: true
-    //     running: true
-    //     onTriggered: {
-    //         contactViewModel.fetchFriends()
-    //         contactViewModel.fetchSentRequests()
-    //         contactViewModel.fetchReceivedRequests()
-    //     }
-    // }
-
     Component.onCompleted: {
         contactViewModel.fetchFriends()
         contactViewModel.fetchSentRequests()

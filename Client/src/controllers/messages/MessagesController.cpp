@@ -13,6 +13,7 @@ MessagesController::MessagesController(ConversationViewModel* viewModel, QObject
 
     connect(m_viewModel, &ConversationViewModel::sendMessageRequested, this, &MessagesController::sendMessage);
     connect(m_viewModel, &ConversationViewModel::fetchMessagesRequested, this, &MessagesController::fetchMessages);
+    connect(messagesController, &MessagesController::sendRequest, networkController, &NetworkController::sendData);
 }
 
 bool MessagesController::canHandle(const QString& type) const {

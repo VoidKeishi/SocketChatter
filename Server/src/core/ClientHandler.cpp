@@ -11,7 +11,7 @@ ClientHandler::ClientHandler(QTcpSocket* socket, QObject* parent)
     , dispatcher(new RequestDispatcher(this)) 
     , authHandler(new AuthHandler(DatabaseManager::instance())) 
     , contactHandler(new ContactHandler(DatabaseManager::instance())) 
-    , messageHandler(new MessageHandler(this))
+    , messageHandler(new MessageHandler(DatabaseManager::instance()))
 
 {
     dispatcher->registerHandler(authHandler);

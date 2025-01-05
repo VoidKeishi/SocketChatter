@@ -2,6 +2,7 @@
 
 #include "../IController.h"
 #include "../../viewmodels/ConversationViewModel.h"
+#include "../session/UserManager.h"
 #include <QObject>
 #include <QMap>
 #include <functional>

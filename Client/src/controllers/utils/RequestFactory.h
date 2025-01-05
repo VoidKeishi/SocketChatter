@@ -113,8 +113,8 @@ namespace RequestFactory
             {"type", "SEND_MESSAGE_RESPONSE"},
             {"timestamp", QDateTime::currentSecsSinceEpoch()},
             {"payload", QJsonObject{
-                            {"contact", contact},
-                            {"content", content}}}};
+                {"contact", contact},
+                {"content", content}}}};
         return QJsonDocument(request).toJson(QJsonDocument::Compact) + '\n';
     }
 

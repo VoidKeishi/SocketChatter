@@ -1,9 +1,11 @@
 #pragma once
 #include "../database/DatabaseManager.h"
+#include "../utils/Logger.h"
 #include <QJsonArray>
 #include <QJsonObject>
 #include <QString>
 #include <QSqlQuery>
+#include <QSqlError>
 
 class MessageRepository {
 public:

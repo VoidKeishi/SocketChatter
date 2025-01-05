@@ -2,6 +2,8 @@ import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
 import QtQuick.Controls.Material
+import Message 1.0
+import ConversationViewModel 1.0
 
 Page {
     id: conversationPage
@@ -23,6 +25,7 @@ Page {
     }
 
     Component.onCompleted: {
+        console.log("--------In conversation with 2: ", conversationPage.inConversationWith)
         conversationViewModel.setCurrentContact(inConversationWith)
     }
 
@@ -174,6 +177,7 @@ Page {
         }
     }
     onInConversationWithChanged: {
+        console.log("--------In conversation with 3: ", conversationPage.inConversationWith)
         conversationViewModel.setCurrentContact(inConversationWith)
     }
 }

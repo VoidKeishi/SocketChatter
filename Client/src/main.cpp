@@ -2,10 +2,15 @@
 #include <QQmlApplicationEngine>
 #include <QQuickStyle>
 #include <QQmlContext>
+#include <QQmlEngine> 
 #include "controllers/ControllerManager.h"
 #include "controllers/utils/Logger.h"
+#include "viewmodels/ConversationViewModel.h"
 
 int main(int argc, char *argv[]) {
+    qmlRegisterType<QmlMessage>("Message", 1, 0, "Message");
+    qmlRegisterType<ConversationViewModel>("ConversationViewModel", 1, 0, "ConversationViewModel");
+    
     QGuiApplication app(argc, argv);
 
     // Configure log level based on command-line arguments

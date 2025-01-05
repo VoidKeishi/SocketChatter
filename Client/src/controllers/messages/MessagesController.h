@@ -28,4 +28,5 @@ private:
 
     void handleSendMessageResponse(const QJsonObject& response);
     void handleFetchMessagesResponse(const QJsonObject& response);
+    void handleIncomingMessage(const QJsonObject &response); 
 };

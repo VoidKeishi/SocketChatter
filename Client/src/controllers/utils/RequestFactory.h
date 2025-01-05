@@ -128,4 +128,17 @@ namespace RequestFactory
         return QJsonDocument(request).toJson(QJsonDocument::Compact) + '\n';
     }
 
+    inline QByteArray createAckMessageRequest(const QString &messageId)
+    {
+        QJsonObject request = {
+            {"type", "SEND_MESSAGE_ACK"}, 
+            {"timestamp", QDateTime::currentSecsSinceEpoch()}, 
+            {"payload", QJsonObject{
+                {"messageId", messageId}
+            }}
+        };
+
+        return QJsonDocument(request).toJson(QJsonDocument::Compact) + '\n'; 
+    }
+
 }

@@ -8,7 +8,8 @@ MessagesController::MessagesController(ConversationViewModel* viewModel, QObject
     : QObject(parent), m_viewModel(viewModel) {
     handlers = {
         {"SEND_MESSAGE_RESPONSE", [this](const QJsonObject& p) { handleSendMessageResponse(p); }},
-        {"FETCH_MESSAGES_RESPONSE", [this](const QJsonObject& p) { handleFetchMessagesResponse(p); }}
+        {"FETCH_MESSAGES_RESPONSE", [this](const QJsonObject& p) { handleFetchMessagesResponse(p); }},
+        {"TEXT_MESSAGE", [this](const QJsonObject &p) { handleIncomingMessage(p); }},
     };
 
     connect(m_viewModel, &ConversationViewModel::sendMessageRequested, this, &MessagesController::sendMessage);
@@ -58,4 +59,16 @@ void MessagesController::handleFetchMessagesResponse(const QJsonObject& response
         messages.append({author, content, timestamp, author == m_viewModel->currentContact()});
     }
     m_viewModel->onMessagesFetched(messages);
+}
+
+void MessagesController::handleIncomingMessage(const QJsonObject &response){
+    QJsonObject payload = response["payload"].toObject(); 
+
+    QString from = payload["from"].toString(); 
+    QString content = payload["message"].toString(); 
+    QDateTime timestamp = QDateTime::fromMSecsSinceEpoch(payload["timestamp"].toVariant().toLongLong());
+
+    m_viewModel->onMessageReceived(from, content, timestamp); 
+
+    emit sendRequest(RequestFactory::createAckMessageRequest(from)); 
 }

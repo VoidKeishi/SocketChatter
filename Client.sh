@@ -1,3 +1,4 @@
+mkdir -p Client/build
 cd Client/build
 cmake ..
 make

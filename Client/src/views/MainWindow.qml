@@ -6,8 +6,9 @@ import QtQuick.Layouts
 ApplicationWindow {
     id: mainWindow
     width: 1280
-    height: 960
+    height: Screen.height - 40
     visible: true
+    visibility: Window.Windowed
 
     // Enable Material theme with dark mode
     Material.theme: Material.Dark

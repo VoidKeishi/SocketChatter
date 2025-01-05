@@ -3,6 +3,7 @@
 #include "ContactHandler.h"
 #include "../core/ConnectionManager.h"
 #include "../utils/Logger.h"
+#include "../utils/ResponseFactory.h"
 
 ContactHandler::ContactHandler(DatabaseManager* db)
     : BaseHandler(nullptr), contactRepo(db) 
@@ -24,24 +25,18 @@ void ContactHandler::handleSendRequest(const QJsonObject& request) {
     QString to = payload["to"].toString();
 
     if (contactRepo.createFriendRequest(from, to)) {
-        emit responseReady({
-            {"type", "FRIEND_REQUEST_SENT_RESPONSE"},
-            {"payload", QJsonObject{
-                {"success", true},
-                {"message", "Friend request sent"},
-                {"to", to}
-            }}
-        });
+        emit responseReady(ResponseFactory::createFriendRequestResponse(
+            true, 
+            "Friend request sent", 
+            to
+        ));
     } else {
-        Logger::error("Failed to send friend request");
-        emit responseReady({
-            {"type", "FRIEND_REQUEST_SENT_RESPONSE"},
-            {"payload", QJsonObject{
-                {"success", false},
-                {"message", "Failed to send friend request"},
-                {"to", to}
-            }}
-        });
+        qDebug() << "Failed to send friend request";
+        emit responseReady(ResponseFactory::createFriendRequestResponse(
+            false, 
+            "Failed to send friend request", 
+            to
+        ));
     }
 }
 
@@ -51,23 +46,17 @@ void ContactHandler::handleCancelSentRequest(const QJsonObject& request) {
     QString to = payload["to"].toString();
     
     if (contactRepo.updateRequestStatus(from, to, "cancelled")) {
-        emit responseReady({
-            {"type", "FRIEND_REQUEST_CANCEL_RESPONSE"},
-            {"payload", QJsonObject{
-                {"success", true},
-                {"message", "Friend request cancelled"},
-                {"to", to}
-            }}
-        });
+        emit responseReady(ResponseFactory::cancelFriendRequestResponse(
+            true, 
+            "Friend request cancelled", 
+            to
+        ));
     } else {
-        emit responseReady({
-            {"type", "FRIEND_REQUEST_CANCEL_RESPONSE"},
-            {"payload", QJsonObject{
-                {"success", false},
-                {"message", "Failed to cancel friend request"},
-                {"to", to}
-            }}
-        });
+        emit responseReady(ResponseFactory::cancelFriendRequestResponse(
+            false, 
+            "Failed to cancel friend request", 
+            to
+        ));
     }
 }
 
@@ -81,13 +70,7 @@ void ContactHandler::handleGetFriendList(const QJsonObject& request) {
         friendArray.append(friendName);
     }
     
-    emit responseReady({
-        {"type", "FETCH_FRIEND_LIST_RESPONSE"},
-        {"payload", QJsonObject{
-            {"success", true},
-            {"friends", friendArray}
-        }}
-    });
+    emit responseReady(ResponseFactory::getFriendListResponse(true, friendArray));
 }
 
 void ContactHandler::handleGetSentRequestList(const QJsonObject& request) {
@@ -99,13 +82,7 @@ void ContactHandler::handleGetSentRequestList(const QJsonObject& request) {
     for (const QString& sentName : sent) {
         sentArray.append(sentName);
     }
-    emit responseReady({
-        {"type", "FETCH_SENT_REQUESTS_RESPONSE"},
-        {"payload", QJsonObject{
-            {"success", true},
-            {"sent", sentArray}
-        }}
-    });
+    emit responseReady(ResponseFactory::getSendRequestListResponse(true, sentArray));
 }
 
 void ContactHandler::handleGetPendingRequests(const QJsonObject& request) {
@@ -118,14 +95,7 @@ void ContactHandler::handleGetPendingRequests(const QJsonObject& request) {
         requestArray.append(req);
     }
     
-    emit responseReady({
-        {"type", "FETCH_RECEIVED_REQUESTS_RESPONSE"},
-        {"timestamp", static_cast<int>(QDateTime::currentSecsSinceEpoch())},
-        {"payload", QJsonObject{
-            {"success", true},
-            {"requests", requestArray}
-        }}
-    });
+    emit responseReady(ResponseFactory::getPendingRequestsResponse(true, requestArray));
 }
 
 void ContactHandler::handleResponseRequest(const QJsonObject& request) {
@@ -141,27 +111,19 @@ void ContactHandler::handleResponseRequest(const QJsonObject& request) {
             contactRepo.addFriendship(to, from);
         }
         
-        emit responseReady({
-            {"type", "FRIEND_REQUEST_RESPONSE"},
-            {"timestamp", QDateTime::currentSecsSinceEpoch()},
-            {"payload", QJsonObject{
-                {"success", true},
-                {"message", QString("Friend request %1").arg(status)},
-                {"from", from},
-                {"to", to}
-            }}
-        });
+        emit responseReady(ResponseFactory::createFriendRequestResponse(
+            true, 
+            QString("Friend request %1").arg(status), 
+            from, 
+            to
+        ));
     } else {
-        emit responseReady({
-            {"type", "FRIEND_REQUEST_RESPONSE"},
-            {"timestamp", QDateTime::currentSecsSinceEpoch()},
-            {"payload", QJsonObject{
-                {"success", false},
-                {"message", "Failed to process friend request"},
-                {"from", from},
-                {"to", to}
-            }}
-        });
+        emit responseReady(ResponseFactory::createFriendRequestResponse(
+            false, 
+            "Failed to process friend request", 
+            from, 
+            to
+        ));
     }
 }
 
@@ -172,52 +134,65 @@ void ContactHandler::handleDeleteFriend(const QJsonObject& request) {
     
     if (contactRepo.areFriends(from, to)) {
         if (contactRepo.deleteFriendship(from, to)) {
-            emit responseReady({
-                {"type", "FRIEND_DELETED_RESPONSE"},
-                {"payload", QJsonObject{
-                    {"success", true},
-                    {"message", "Friend deleted"},
-                    {"from", from},
-                    {"to", to}
-                }}
-            });
+            emit responseReady(ResponseFactory::deleteFriendResponse(
+                true, 
+                "Friend deleted", 
+                from, 
+                to
+            ));
+            // emit responseReady({
+            //     {"type", "FRIEND_DELETED_RESPONSE"},
+            //     {"payload", QJsonObject{
+            //         {"success", true},
+            //         {"message", "Friend deleted"},
+            //         {"from", from},
+            //         {"to", to}
+            //     }}
+            // });
 
             // Check if the 'to' user is connected
             ClientHandler* toClient = ConnectionManager::instance()->getClientHandler(to);
             if (toClient) {
-                QJsonObject notification = {
-                    {"type", "FRIEND_DELETED_NOTIFICATION"},
-                    {"timestamp", static_cast<int>(QDateTime::currentSecsSinceEpoch())},
-                    {"payload", QJsonObject{
-                        {"from", from},
-                        {"message", QString("%1 has removed you from their friends list.").arg(from)}
-                    }}
-                };
-                toClient->sendResponse(notification);
+                toClient->sendResponse(ResponseFactory::announceFriendDeletion(
+                    from, 
+                    QString("%1 has removed you from their friends list.").arg(from)
+                ));
                 Logger::info(QString("Sent FRIEND_DELETED_NOTIFICATION to %1").arg(to));
             } else {
                 Logger::info(QString("User %1 is not connected. Notification not sent.").arg(to));
             }
         } else {
-            emit responseReady({
-                {"type", "FRIEND_DELETED_RESPONSE"},
-                {"payload", QJsonObject{
-                    {"success", false},
-                    {"message", "Failed to delete friend"},
-                    {"from", from},
-                    {"to", to}
-                }}
-            });
+            emit responseReady(ResponseFactory::deleteFriendResponse(
+                false, 
+                "Failed to delete friend", 
+                from, 
+                to
+            ));
+            // emit responseReady({
+            //     {"type", "FRIEND_DELETED_RESPONSE"},
+            //     {"payload", QJsonObject{
+            //         {"success", false},
+            //         {"message", "Failed to delete friend"},
+            //         {"from", from},
+            //         {"to", to}
+            //     }}
+            // });
         }
     } else {
-        emit responseReady({
-            {"type", "FRIEND_DELETED_RESPONSE"},
-            {"payload", QJsonObject{
-                {"success", false},
-                {"message", "Not friends with user"},
-                {"from", from},
-                {"to", to}
-            }}
-        });
+        emit responseReady(ResponseFactory::deleteFriendResponse(
+            false, 
+            "Not friends with user", 
+            from, 
+            to
+        ));
+        // emit responseReady({
+        //     {"type", "FRIEND_DELETED_RESPONSE"},
+        //     {"payload", QJsonObject{
+        //         {"success", false},
+        //         {"message", "Not friends with user"},
+        //         {"from", from},
+        //         {"to", to}
+        //     }}
+        // });
     }
 }

@@ -5,8 +5,8 @@
 MessageHandler::MessageHandler(DatabaseManager* db) 
     : BaseHandler(nullptr), messageRepo(db) {
     handlers = {
-        {"SEND_MESSAGE_RESPONSE", [this](const QJsonObject& p) { handleSendMessage(p); }},
-        {"FETCH_MESSAGES_RESPONSE", [this](const QJsonObject& p) { handleFetchMessages(p); }}
+        {"SEND_MESSAGE_REQUEST", [this](const QJsonObject& p) { handleSendMessage(p); }},
+        {"FETCH_MESSAGES_REQUEST", [this](const QJsonObject& p) { handleFetchMessages(p); }}
     };
 }
 

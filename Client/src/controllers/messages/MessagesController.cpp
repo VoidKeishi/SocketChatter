@@ -37,7 +37,7 @@ void MessagesController::fetchMessages(const QString& sender, const QString& rec
 
 void MessagesController::handleSendMessageResponse(const QJsonObject& response) {
     bool success = response.value("success").toBool();
-    if (success) {
+    if (success) { 
         QString sender = response.value("sender").toString();
         QString receiver = response.value("receiver").toString();
         QString content = response.value("content").toString();
@@ -45,7 +45,7 @@ void MessagesController::handleSendMessageResponse(const QJsonObject& response) 
         QDateTime timestamp = QDateTime::fromString(response.value("timestamp").toString(), Qt::ISODate);
         m_viewModel->onMessageReceived(sender, receiver, content, timestamp, id);
     } else {
-        Logger::error("Failed to send message");
+        Logger::error("Failed to send message"); 
     }
 }
 

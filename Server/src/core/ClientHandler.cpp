@@ -55,8 +55,11 @@ void ClientHandler::onReadyRead() {
         QJsonParseError parseError;
         QJsonDocument doc = QJsonDocument::fromJson(data, &parseError);
         if (doc.isNull() || !doc.isObject()) {
-            qDebug() << "null: " << doc.isNull(); 
-            qDebug() << "not obj: " << doc.isObject(); 
+            // boolean cannot toString(), ma ko toString ko print dc 
+            // Logger::debug(" Doc is null: " + doc.isNull().toString()); 
+            // Logger::debug(" Doc is not object: " + !doc.isObject().toString());
+            qDebug() << "Json doc is null: " << doc.isNull(); 
+            qDebug() << "Json doc is not object: " << !doc.isObject(); 
             Logger::error("Received invalid JSON: " + parseError.errorString());
             continue;
         }

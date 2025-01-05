@@ -110,7 +110,7 @@ namespace RequestFactory
     inline QByteArray createSendMessageRequest(const QString &sender, const QString &receiver, const QString &content)
     {
         QJsonObject request = {
-            {"type", "SEND_MESSAGE_RESPONSE"},
+            {"type", "SEND_MESSAGE_REQUEST"},
             {"timestamp", QDateTime::currentSecsSinceEpoch()},
             {"payload", QJsonObject{
                 {"sender", sender},
@@ -122,7 +122,7 @@ namespace RequestFactory
     inline QByteArray createFetchMessagesRequest(const QString &sender, const QString &receiver)
     {
         QJsonObject request = {
-            {"type", "FETCH_MESSAGES_RESPONSE"},
+            {"type", "FETCH_MESSAGES_REQUEST"},
             {"timestamp", QDateTime::currentSecsSinceEpoch()},
             {"payload", QJsonObject{
                 {"sender", sender}, 

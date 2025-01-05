@@ -1,5 +1,3 @@
-#include <QDebug>
-
 #include "AuthHandler.h"
 #include "../utils/Logger.h"
 #include "../utils/ResponseFactory.h"

@@ -1,7 +1,6 @@
 #include <QJsonObject>
 #include <QJsonDocument>
 #include <QJsonArray>
-#include <QDebug>
 
 #include "ContactsController.h"
 #include "ContactsRequestSender.h"

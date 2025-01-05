@@ -7,7 +7,7 @@ int main(int argc, char *argv[]) {
     QCoreApplication app(argc, argv);
 
     if (argc >= 1) {
-        QString logLevelStr = QString::fromUtf8(argv[3]).toUpper();
+        QString logLevelStr = QString::fromUtf8(argv[1]).toUpper();
         Logger::setLogLevel(logLevelStr);
     }
     else {

@@ -45,11 +45,11 @@ void AuthViewModel::reset() {
 }
 
 void AuthViewModel::sendRequestLogin(const QString& username, const QString& password) {
-    Logger::debug("Sending login request for user: " + username);
+    Logger::info("Sending login request for user: " + username);
     emit authActionRequested(AuthAction::Login, username, password);
 }
 
 void AuthViewModel::sendRequestRegister(const QString& username, const QString& password) {
-    Logger::debug("Sending register request for user: " + username);
+    Logger::info("Sending register request for user: " + username);
     emit authActionRequested(AuthAction::Register, username, password);
 }

@@ -3,6 +3,7 @@
 #include <QObject>
 #include <QTcpSocket>
 #include <QJsonObject>
+
 #include "RequestDispatcher.h"
 #include "../handlers/AuthHandler.h"
 #include "../handlers/ContactHandler.h"
@@ -15,7 +16,6 @@ public:
     void sendResponse(const QJsonObject& response);
 
 signals:
-    void disconnected();
     void finished();
 
 public slots:
@@ -30,9 +30,11 @@ private slots:
 private:
     QTcpSocket* clientSocket;
     QByteArray buffer;
+
     RequestDispatcher* dispatcher;
     AuthHandler* authHandler;
     ContactHandler* contactHandler;
+
     QString m_username;
     void processRequest(const QJsonObject& request);
 };

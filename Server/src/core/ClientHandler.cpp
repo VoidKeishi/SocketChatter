@@ -5,14 +5,14 @@
 #include "ConnectionManager.h"
 #include "../utils/Logger.h"
 
-
 ClientHandler::ClientHandler(QTcpSocket* socket, QObject* parent) 
     : QObject(parent)
     , clientSocket(socket)
     , dispatcher(new RequestDispatcher(this)) 
     , authHandler(new AuthHandler(DatabaseManager::instance())) 
-    , contactHandler(new ContactHandler(DatabaseManager::instance())) {
+    , contactHandler(new ContactHandler(DatabaseManager::instance())) 
 
+{
     dispatcher->registerHandler(authHandler);
     dispatcher->registerHandler(contactHandler);
     
@@ -22,12 +22,15 @@ ClientHandler::ClientHandler(QTcpSocket* socket, QObject* parent)
     connect(clientSocket, &QTcpSocket::disconnected, 
             this, &ClientHandler::onDisconnected);
     connect(dispatcher, &RequestDispatcher::responseReady,
-            this, [this](const QJsonObject& response) {
-        QJsonDocument doc(response);
-        clientSocket->write(doc.toJson() + "\n");
-    });
-    connect(dispatcher, &RequestDispatcher::responseReady,
             this, &ClientHandler::sendResponse);
+}
+
+void ClientHandler::start() {
+    QString clientIp = clientSocket->peerAddress().toString();
+    if (clientIp.startsWith("::ffff:")) {
+        clientIp = clientIp.mid(7); // Remove the "::ffff:" prefix
+    }
+    Logger::info("ClientHandler started for " + clientIp + ":" + QString::number(clientSocket->peerPort()));
 }
 
 void ClientHandler::onReadyRead() {
@@ -53,24 +56,17 @@ void ClientHandler::onReadyRead() {
         if (clientIp.startsWith("::ffff:")) {
             clientIp = clientIp.mid(7); // Remove the "::ffff:" prefix
         }
-        Logger::json(QString("Received request from %1:%2").arg(clientIp).arg(clientSocket->peerPort()), request);        
+        if (!m_username.isEmpty()) {
+            Logger::info(QString("Request received from user: %1").arg(m_username));
+        } else {
+            Logger::json(QString("Received request from %1:%2").arg(clientIp).arg(clientSocket->peerPort()), request);    
+        }      
         processRequest(request);
     }
 }
 
-void ClientHandler::onDisconnected() {
-    if (!m_username.isEmpty()) {
-        ConnectionManager::instance()->removeClient(m_username);
-        Logger::info(QString("User %1 disconnected").arg(m_username));
-    }
-    clientSocket->deleteLater();
-}
-
 void ClientHandler::processRequest(const QJsonObject& request) {
     dispatcher->dispatch(request);
-}
-
-void ClientHandler::start() {
 }
 
 void ClientHandler::cleanup() {
@@ -95,4 +91,12 @@ void ClientHandler::onLoginSuccess(const QString& username) {
     m_username = username;
     ConnectionManager::instance()->addClient(username, this);
     Logger::info(QString("User %1 connected").arg(username));
+}
+
+void ClientHandler::onDisconnected() {
+    if (!m_username.isEmpty()) {
+        ConnectionManager::instance()->removeClient(m_username);
+        Logger::info(QString("User %1 disconnected").arg(m_username));
+    }
+    clientSocket->deleteLater();
 }

@@ -1,5 +1,4 @@
-#ifndef BASEHANDLER_H
-#define BASEHANDLER_H
+#pragma once
 
 #include <QObject>
 #include <QJsonObject>
@@ -27,5 +26,3 @@ signals:
 protected:
     QMap<QString, std::function<void(const QJsonObject&)>> handlers;
 };
-
-#endif // BASEHANDLER_H

@@ -1,6 +1,7 @@
-#include "NetworkController.h"
 #include <QDebug>
 #include <QJsonDocument>
+
+#include "NetworkController.h"
 #include "../utils/Logger.h"
 
 NetworkController* NetworkController::m_instance = nullptr;
@@ -25,12 +26,12 @@ void NetworkController::connectToServer(const QString &host, quint16 port) {
     if (socket->state() == QAbstractSocket::UnconnectedState) {
         socket->connectToHost(host, port);
     } else {
-        qDebug() << "Already connected or connecting";
+        Logger::debug("Already connected or connecting");
     }
 }
 
 void NetworkController::onConnected() {
-    qDebug() << "Connected to server";
+    Logger::debug("Connected to server");
     emit connected();
 }
 
@@ -40,7 +41,7 @@ void NetworkController::sendData(const QByteArray &data) {
         socket->write(data);
         socket->flush();
     } else {
-        qWarning() << "Socket is not connected";
+        Logger::error("Socket is not connected");
     }
 }
 
@@ -69,11 +70,11 @@ void NetworkController::onReadyRead() {
 }
 
 void NetworkController::onDisconnected() {
-    qDebug() << "Disconnected from server";
+    Logger::debug("Disconnected from server");
     emit disconnected();
 }
 
 void NetworkController::onErrorOccurred(QAbstractSocket::SocketError socketError) {
     Q_UNUSED(socketError);
-    qWarning() << "Socket error:" << socket->errorString();
+    Logger::error("Socket error: " + socket->errorString());
 }

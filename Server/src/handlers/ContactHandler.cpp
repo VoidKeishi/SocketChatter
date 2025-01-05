@@ -1,7 +1,7 @@
+#include <QJsonArray>
+
 #include "ContactHandler.h"
 #include "../core/ConnectionManager.h"
-#include <QDebug>
-#include <QJsonArray>
 #include "../utils/Logger.h"
 
 ContactHandler::ContactHandler(DatabaseManager* db)
@@ -33,7 +33,7 @@ void ContactHandler::handleSendRequest(const QJsonObject& request) {
             }}
         });
     } else {
-        qDebug() << "Failed to send friend request";
+        Logger::error("Failed to send friend request");
         emit responseReady({
             {"type", "FRIEND_REQUEST_SENT_RESPONSE"},
             {"payload", QJsonObject{

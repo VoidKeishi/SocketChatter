@@ -1,9 +1,9 @@
-#ifndef USER_REPOSITORY_H
-#define USER_REPOSITORY_H
+#pragma once
 
-#include "../database/DatabaseManager.h"
 #include <QString>
 #include <QSqlQuery>
+
+#include "../database/DatabaseManager.h"
 
 class UserRepository {
 public:
@@ -16,5 +16,3 @@ public:
 private:
     DatabaseManager* db;
 };
-
-#endif // USER_REPOSITORY_H

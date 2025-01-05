@@ -1,4 +1,5 @@
 #pragma once
+
 #include <QObject>
 
 enum class AuthAction {

@@ -1,7 +1,8 @@
+#include <QJsonArray>
+
 #include "MessagesController.h"
 #include "../utils/RequestFactory.h"
-#include <QJsonArray>
-#include <QDebug>
+#include "../utils/Logger.h"
 
 MessagesController::MessagesController(ConversationViewModel* viewModel, QObject* parent)
     : QObject(parent), m_viewModel(viewModel) {
@@ -42,7 +43,7 @@ void MessagesController::handleSendMessageResponse(const QJsonObject& response) 
         QDateTime timestamp = QDateTime::fromString(response.value("timestamp").toString(), Qt::ISODate);
         m_viewModel->onMessageReceived(author, content, timestamp);
     } else {
-        qDebug() << "Failed to send message";
+        Logger::error("Failed to send message");
     }
 }
 

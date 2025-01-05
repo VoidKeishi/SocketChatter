@@ -28,7 +28,7 @@ void ContactsResponseHandler::handleSentListFetched(const QJsonObject& response)
     }
     m_viewModel->setSentRequests(sentRequests);
     for (const auto& request : sentRequests) {
-        qDebug() << "Request: " << request;
+        Logger::debug("Request: " + request);
     }
 }
 
@@ -49,9 +49,9 @@ void ContactsResponseHandler::handleFriendRequestSent(const QJsonObject& respons
     if (success) {
         QString username = response.value("to").toString();
         m_viewModel->addSentRequest(username);
-        qDebug() << "Friend request sent success: " << username;
+        Logger::debug("Friend request sent success: " + username);
     } else {
-        qDebug() << "Error: " << message;
+        Logger::error("Error: " + message);
     }
 }
 
@@ -62,9 +62,9 @@ void ContactsResponseHandler::handleFriendRequestCanceled(const QJsonObject& res
     if (success) {
         QString username = response.value("to").toString();
         m_viewModel->removeSentRequest(username);
-        qDebug() << "Friend request canceled: " << username;
+        Logger::debug("Friend request canceled: " + username);
     } else {
-        qDebug() << "Error: " << message;
+        Logger::error("Error: " + message);
     }
 }
 
@@ -78,7 +78,7 @@ void ContactsResponseHandler::handleFriendRequestResponse(const QJsonObject& res
         m_viewModel->addFriend(username);
     }
     else {
-        qDebug() << "Error: " << message;
+        Logger::error("Error: " + message);
     }
 }
 
@@ -90,6 +90,6 @@ void ContactsResponseHandler::handleFriendDeleted(const QJsonObject& response) {
         QString username = response.value("to").toString();
         m_viewModel->removeFriend(username);
     } else {
-        qDebug() << "Error: " << message;
+        Logger::error("Error: " + message);
     }
 }

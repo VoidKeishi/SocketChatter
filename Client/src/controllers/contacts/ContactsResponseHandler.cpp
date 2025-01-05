@@ -70,12 +70,15 @@ void ContactsResponseHandler::handleFriendRequestCanceled(const QJsonObject& res
 
 void ContactsResponseHandler::handleFriendRequestResponse(const QJsonObject& response) {
     bool success = response.value("success").toBool();
+    bool accept = response.value("accept").toBool();
     QString message = response.value("message").toString();
     QString username = response.value("to").toString();
     
     if (success) {
         m_viewModel->removeReceivedRequest(username);
-        m_viewModel->addFriend(username);
+        if (accept){
+            m_viewModel->addFriend(username);
+        }
     }
     else {
         Logger::error("Error: " + message);

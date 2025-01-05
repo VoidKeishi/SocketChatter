@@ -6,6 +6,7 @@
 
 #include "ContactsRequestSender.h"
 #include "ContactsResponseHandler.h"
+#include "ContactsNotificationHandler.h"
 #include "../IController.h"
 #include "../../viewmodels/ContactViewModel.h"
 
@@ -25,5 +26,6 @@ private:
     ContactViewModel* m_viewModel;
     ContactsRequestSender* m_requestSender;
     ContactsResponseHandler* m_responseHandler;
+    ContactsNotificationHandler* m_notificationHandler;
     QMap<QString, std::function<void(const QJsonObject&)>> handlers;
 };

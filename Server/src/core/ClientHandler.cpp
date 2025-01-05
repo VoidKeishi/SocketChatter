@@ -23,6 +23,12 @@ ClientHandler::ClientHandler(QTcpSocket* socket, QObject* parent)
             this, &ClientHandler::onDisconnected);
     connect(dispatcher, &RequestDispatcher::responseReady,
             this, &ClientHandler::sendResponse);
+    connect(authHandler, &AuthHandler::loginSuccess,
+            this, &ClientHandler::onLoginSuccess);
+    // Connect to ConnectionManager's messageToClient signal
+    connect(ConnectionManager::instance(), &ConnectionManager::messageToClient,
+            this, &ClientHandler::handleMessage,
+            Qt::QueuedConnection); 
 }
 
 void ClientHandler::start() {
@@ -57,7 +63,7 @@ void ClientHandler::onReadyRead() {
             clientIp = clientIp.mid(7); // Remove the "::ffff:" prefix
         }
         if (!m_username.isEmpty()) {
-            Logger::info(QString("Request received from user: %1").arg(m_username));
+            Logger::json(QString("Request received from user: %1").arg(m_username), request);
         } else {
             Logger::json(QString("Received request from %1:%2").arg(clientIp).arg(clientSocket->peerPort()), request);    
         }      
@@ -85,6 +91,12 @@ void ClientHandler::sendResponse(const QJsonObject& response) {
     clientSocket->write(data);
     clientSocket->flush();
     Logger::json("Sent response", response);
+}
+
+void ClientHandler::handleMessage(const QString& toUsername, const QJsonObject& message) {
+    if (toUsername == m_username) {
+        sendResponse(message);
+    }
 }
 
 void ClientHandler::onLoginSuccess(const QString& username) {

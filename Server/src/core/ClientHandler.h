@@ -21,11 +21,13 @@ signals:
 public slots:
     void start();
     void cleanup();
+    void onLoginSuccess(const QString& username);
+    void handleMessage(const QString& toUsername, const QJsonObject& message);
 
 private slots:
     void onReadyRead();
     void onDisconnected();
-    void onLoginSuccess(const QString& username);
+
 
 private:
     QTcpSocket* clientSocket;

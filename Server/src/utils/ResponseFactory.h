@@ -1,5 +1,4 @@
-#ifndef RESPONSE_FACTORY_H
-#define RESPONSE_FACTORY_H
+#pragma once
 
 #include <QJsonObject> 
 #include <QString> 
@@ -38,6 +37,7 @@ namespace ResponseFactory
     {
         return QJsonObject {
             {"type", "FRIEND_REQUEST_SENT_RESPONSE"},
+            {"timestamp", QDateTime::currentSecsSinceEpoch()},
             {"payload", QJsonObject{
                 {"success", success},
                 {"message", message},
@@ -50,6 +50,7 @@ namespace ResponseFactory
     {
         return QJsonObject {
             {"type", "FRIEND_REQUEST_CANCEL_RESPONSE"},
+            {"timestamp", QDateTime::currentSecsSinceEpoch()},
             {"payload", QJsonObject{
                 {"success", success},
                 {"message", message},
@@ -62,6 +63,7 @@ namespace ResponseFactory
     {
         return QJsonObject {
             {"type", "FETCH_FRIEND_LIST_RESPONSE"},
+            {"timestamp", QDateTime::currentSecsSinceEpoch()},
             {"payload", QJsonObject{
                 {"success", success},
                 {"friends", friendArray}
@@ -73,6 +75,7 @@ namespace ResponseFactory
     {
         return QJsonObject {
             {"type", "FETCH_SENT_REQUESTS_RESPONSE"},
+            {"timestamp", QDateTime::currentSecsSinceEpoch()},
             {"payload", QJsonObject{
                 {"success", success},
                 {"sent", sentArray}
@@ -84,7 +87,7 @@ namespace ResponseFactory
     {
         return QJsonObject {
             {"type", "FETCH_RECEIVED_REQUESTS_RESPONSE"},
-            {"timestamp", static_cast<int>(QDateTime::currentSecsSinceEpoch())},
+            {"timestamp", QDateTime::currentSecsSinceEpoch()},
             {"payload", QJsonObject{
                 {"success", success},
                 {"requests", requestArray}
@@ -92,13 +95,14 @@ namespace ResponseFactory
         };
     }
 
-    inline QJsonObject createFriendRequestResponse(bool success, const QString &message, const QString &from, const QString &to)
+    inline QJsonObject createFriendRequestResponseAck(bool success, bool accept, const QString &message, const QString &from, const QString &to)
     {
         return QJsonObject {
-            {"type", "FRIEND_REQUEST_RESPONSE"},
+            {"type", "FRIEND_REQUEST_RESPONSE_ACK"},
             {"timestamp", QDateTime::currentSecsSinceEpoch()},
             {"payload", QJsonObject{
                 {"success", success},
+                {"accept", accept},
                 {"message", message},
                 {"from", from},
                 {"to", to}
@@ -110,6 +114,7 @@ namespace ResponseFactory
     {
         return QJsonObject {
             {"type", "FRIEND_DELETED_RESPONSE"},
+            {"timestamp", QDateTime::currentSecsSinceEpoch()},
             {"payload", QJsonObject{
                 {"success", success},
                 {"message", message},
@@ -123,7 +128,7 @@ namespace ResponseFactory
     {
         return QJsonObject { 
             {"type", "FRIEND_DELETED_NOTIFICATION"},
-            {"timestamp", static_cast<int>(QDateTime::currentSecsSinceEpoch())},
+            {"timestamp", QDateTime::currentSecsSinceEpoch()},
             {"payload", QJsonObject{
                 {"from", from},
                 {"message", message}
@@ -132,5 +137,3 @@ namespace ResponseFactory
     }
     
 }
-
-#endif // REQUEST_FACTORY_H

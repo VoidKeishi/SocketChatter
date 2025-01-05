@@ -70,7 +70,7 @@ ClientHandler* ConnectionManager::getClientHandler(const QString& username) cons
 bool ConnectionManager::sendMessageToClient(const QString& toUsername, const QJsonObject& message) {
     ClientHandler* targetClient = getClientHandler(toUsername);
     if (targetClient) {
-        targetClient->sendResponse(message);
+        emit messageToClient(toUsername, message);
         Logger::info(QString("Message sent to %1").arg(toUsername));
         return true;
     } else {

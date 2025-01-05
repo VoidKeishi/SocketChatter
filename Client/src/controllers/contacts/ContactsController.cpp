@@ -5,6 +5,7 @@
 #include "ContactsController.h"
 #include "ContactsRequestSender.h"
 #include "ContactsResponseHandler.h"
+#include "ContactsNotificationHandler.h"
 #include "../utils/RequestFactory.h"
 #include "../utils/Logger.h"
 #include "../session/UserManager.h"
@@ -14,15 +15,22 @@ ContactsController::ContactsController(ContactViewModel* viewModel, QObject* par
     , m_viewModel(viewModel)
     , m_requestSender(new ContactsRequestSender(this))
     , m_responseHandler(new ContactsResponseHandler(viewModel, this))
+    , m_notificationHandler(new ContactsNotificationHandler(viewModel, this))
 {
     handlers = {
+        // Responses
         {"FRIEND_REQUEST_SENT_RESPONSE", [this](const QJsonObject& p) { m_responseHandler->handleFriendRequestSent(p); }},
         {"FRIEND_REQUEST_CANCEL_RESPONSE", [this](const QJsonObject& p) { m_responseHandler->handleFriendRequestCanceled(p); }},
-        {"FRIEND_REQUEST_RESPONSE", [this](const QJsonObject& p) { m_responseHandler->handleFriendRequestResponse(p); }},
+        {"FRIEND_REQUEST_RESPONSE_ACK", [this](const QJsonObject& p) { m_responseHandler->handleFriendRequestResponse(p); }},
         {"FRIEND_DELETED_RESPONSE", [this](const QJsonObject& p) { m_responseHandler->handleFriendDeleted(p); }},
         {"FETCH_FRIEND_LIST_RESPONSE", [this](const QJsonObject& p) { m_responseHandler->handleFriendsListFetched(p); }},
         {"FETCH_SENT_REQUESTS_RESPONSE", [this](const QJsonObject& p) { m_responseHandler->handleSentListFetched(p); }},
         {"FETCH_RECEIVED_REQUESTS_RESPONSE", [this](const QJsonObject& p) { m_responseHandler->handleReceivedListFetched(p); }},
+        // Notifications
+        {"FRIEND_REQUEST_NOTIFICATION", [this](const QJsonObject& p) { m_notificationHandler->handleFriendRequestNotification(p); }},
+        {"FRIEND_REQUEST_CANCELED_NOTIFICATION", [this](const QJsonObject& p) { m_notificationHandler->handleFriendRequestCanceledNotification(p); }},
+        {"FRIEND_REQUEST_RESPONSE_NOTIFICATION", [this](const QJsonObject& p) { m_notificationHandler->handleFriendRequestResponseNotification(p); }},
+        {"FRIEND_DELETED_NOTIFICATION", [this](const QJsonObject& p) { m_notificationHandler->handleFriendDeletedNotification(p); }},
     };
     connect(viewModel, &ContactViewModel::contactActionRequested,
         this, &ContactsController::handleContactAction);

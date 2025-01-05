@@ -1,7 +1,8 @@
-#include "ContactRepository.h"
 #include <QSqlError>
-#include <QDebug>
 #include <QSqlQuery>
+
+#include "ContactRepository.h"
+#include "../utils/Logger.h"
 
 ContactRepository::ContactRepository(DatabaseManager* db) : db(db) {}
 
@@ -53,7 +54,7 @@ bool ContactRepository::updateRequestStatus(const QString& from, const QString& 
             db->database().rollback();
             return false;
         }
-        qDebug() << "Friend request deleted";
+        Logger::debug("Friend request deleted");
     }
 
     return db->database().commit();

@@ -1,7 +1,7 @@
+#include <QJsonArray>
+
 #include "ContactHandler.h"
 #include "../core/ConnectionManager.h"
-#include <QDebug>
-#include <QJsonArray>
 #include "../utils/Logger.h"
 #include "../utils/ResponseFactory.h"
 

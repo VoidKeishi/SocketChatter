@@ -1,5 +1,4 @@
-#ifndef CLIENTHANDLER_H
-#define CLIENTHANDLER_H
+#pragma once
 
 #include <QObject>
 #include <QTcpSocket>
@@ -37,5 +36,3 @@ private:
     QString m_username;
     void processRequest(const QJsonObject& request);
 };
-
-#endif // CLIENTHANDLER_H

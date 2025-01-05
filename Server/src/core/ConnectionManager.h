@@ -1,5 +1,4 @@
-#ifndef CONNECTIONMANAGER_H
-#define CONNECTIONMANAGER_H
+#pragma once
 
 #include <QObject>
 #include <QMap>
@@ -20,5 +19,3 @@ private:
 
     QMap<QString, ClientHandler*> m_clients;
 };
-
-#endif // CONNECTIONMANAGER_H

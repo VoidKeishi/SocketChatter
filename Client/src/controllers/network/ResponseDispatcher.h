@@ -1,5 +1,4 @@
-#ifndef RESPONSEDISPATCHER_H
-#define RESPONSEDISPATCHER_H
+#pragma once
 
 #include <QObject>
 #include <QByteArray>
@@ -21,5 +20,3 @@ private:
     void dispatchResponse(const QByteArray &data);
     QVector<IController*> controllers;
 };
-
-#endif // RESPONSEDISPATCHER_H

@@ -1,8 +1,9 @@
+#include <QThread>
+
 #include "ServerController.h"
 #include "ClientHandler.h"
 #include "../database/DatabaseManager.h"
-#include <QThread>
-#include <QDebug>
+#include "../utils/Logger.h"
 
 ServerController::ServerController(QObject* parent)
     : QObject(parent), serverSocket(new QTcpServer(this)) {
@@ -13,9 +14,9 @@ void ServerController::startServer(quint16 port) {
     DatabaseManager::instance()->init();
 
     if (!serverSocket->listen(QHostAddress::Any, port)) {
-        qCritical() << "Server could not start!";
+        Logger::error("Server could not start!");
     } else {
-        qInfo() << "Server started on port" << port;
+        Logger::info("Server started on port " + QString::number(port));
     }
 }
 
@@ -26,7 +27,7 @@ void ServerController::onNewConnection() {
         if (peerAddress.startsWith("::ffff:")) {
             peerAddress = peerAddress.mid(7); // Remove the "::ffff:" prefix
         }
-        qDebug() << "Received connection from" << peerAddress << ":" << clientSocket->peerPort();
+        Logger::debug("Received connection from " + peerAddress + ":" + QString::number(clientSocket->peerPort()));
         
         QThread* thread = new QThread();
         ClientHandler* clientHandler = new ClientHandler(clientSocket);

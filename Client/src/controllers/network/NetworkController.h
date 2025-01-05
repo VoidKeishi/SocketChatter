@@ -1,5 +1,4 @@
-#ifndef NETWORKCONTROLLER_H
-#define NETWORKCONTROLLER_H
+#pragma once
 
 #include <QObject>
 #include <QTcpSocket>
@@ -32,5 +31,3 @@ private:
     QTcpSocket *socket;
     QByteArray buffer;
 };
-
-#endif // NETWORKCONTROLLER_H

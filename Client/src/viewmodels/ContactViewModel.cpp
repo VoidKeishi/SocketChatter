@@ -1,3 +1,4 @@
+#include "../controllers/utils/Logger.h"
 #include "../controllers/contacts/ContactsController.h"
 #include "../controllers/session/UserManager.h"
 
@@ -9,43 +10,45 @@ ContactViewModel::ContactViewModel(QObject* parent)
 // =================== UI Actions ===================
 void ContactViewModel::sendFriendRequest(const QString& username) {
     if (m_sentRequests.contains(username)) {
-        qDebug() << "Friend request already sent to" << username;
+        Logger::debug("Friend request already sent to " + username);
         return;
     }
     else if (m_receivedRequests.contains(username)) {
-        qDebug() << "Friend request already received from" << username;
+        Logger::debug("Friend request already received from " + username);
         return;
     }
     else if (m_friends.contains(username)) {
-        qDebug() << "Already friends with" << username;
+        Logger::debug("Already friends with " + username);
         return;
     }
     else {
         if (username == UserManager::instance()->currentUser()) {
-            qDebug() << "Cannot send friend request to self";
+            Logger::error("Cannot send friend request to self");
             return;
         }
         if (username.isEmpty()) {
-            qDebug() << "Username cannot be empty";
+            Logger::error("Username cannot be empty");
             return;
         }
-        qDebug() << "Sending friend request to" << username;
+        Logger::debug("Sending friend request to " + username);
         emit contactActionRequested(ContactAction::SendRequest, username);
     }
 }
 
 void ContactViewModel::cancelFriendRequest(const QString& username) {
-    qDebug() << "Canceling friend request to" << username;
+    Logger::debug("Canceling friend request to " + username);
     emit contactActionRequested(ContactAction::CancelRequest, username);
 }
 
 void ContactViewModel::respondFriendRequest(const QString& username, bool accept) {
-    qDebug() << (accept ? "Accepting" : "Rejecting") << "friend request from" << username;
+    Logger::debug(QString("%1 friend request from %2")
+                 .arg(accept ? "Accepting" : "Rejecting")
+                 .arg(username));
     emit contactActionRequested(ContactAction::RespondRequest, username, accept);
 }
 
 void ContactViewModel::deleteFriend(const QString& username) {
-    qDebug() << "Removing friend" << username;
+    Logger::debug("Removing friend " + username);
     emit contactActionRequested(ContactAction::DeleteFriend, username);
 }
 
@@ -63,7 +66,7 @@ void ContactViewModel::fetchReceivedRequests() {
 
 // =================== Update ===================
 void ContactViewModel::addSentRequest(const QString& username) {
-    qDebug() << "Adding sent request to" << username;
+    Logger::debug("Adding sent request to " + username);
     if (!m_sentRequests.contains(username)) {
         m_sentRequests.append(username);
         emit sentRequestsChanged();
@@ -77,7 +80,7 @@ void ContactViewModel::removeSentRequest(const QString& username) {
 }
 
 void ContactViewModel::addReceivedRequest(const QString& username) {
-    qDebug() << "Adding received request from" << username;
+    Logger::debug("Adding received request from " + username);
     if (!m_receivedRequests.contains(username)) {
         m_receivedRequests.append(username);
         emit receivedRequestsChanged();

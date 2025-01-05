@@ -1,4 +1,5 @@
 #include "RequestDispatcher.h"
+#include "../utils/Logger.h"
 
 RequestDispatcher::RequestDispatcher(QObject* parent) : QObject(parent) {}
 
@@ -14,16 +15,16 @@ void RequestDispatcher::registerHandler(BaseHandler* handler) {
 
 void RequestDispatcher::dispatch(const QJsonObject& request) {
     QString type = request["type"].toString();
-    qDebug() << "Dispatching request type:" << type;
+    Logger::debug("Dispatching request type: " + type);
     
     for (BaseHandler* handler : handlers) {
         if (handler->canHandle(type)) {
-            qDebug() << "Handler found for type:" << type;
+            Logger::debug("Handler found for type: " + type);
             handler->handle(type, request);
             return;
         }
     }
     
-    qWarning() << "No handler found for type:" << type;
+    Logger::error("No handler found for request type: " + type);
     emit error(QString("No handler found for request type: %1").arg(type));
 }

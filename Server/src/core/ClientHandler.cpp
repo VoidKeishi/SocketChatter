@@ -1,8 +1,8 @@
-#include "ClientHandler.h"
-#include "ConnectionManager.h"
 #include <QJsonDocument>
 #include <QJsonParseError>
-#include <QDebug>
+
+#include "ClientHandler.h"
+#include "ConnectionManager.h"
 #include "../utils/Logger.h"
 
 
@@ -44,7 +44,7 @@ void ClientHandler::onReadyRead() {
         QJsonParseError parseError;
         QJsonDocument doc = QJsonDocument::fromJson(data, &parseError);
         if (doc.isNull() || !doc.isObject()) {
-            qWarning() << "Received invalid JSON:" << parseError.errorString();
+            Logger::error("Received invalid JSON: " + parseError.errorString());
             continue;
         }
 

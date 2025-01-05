@@ -42,11 +42,18 @@ void ClientHandler::start() {
 }
 
 void ClientHandler::onReadyRead() {
-    buffer.append(clientSocket->readAll());
+    QByteArray newData = clientSocket->readAll();
+    Logger::debug(QString("Raw data received (hex): %1").arg(QString(newData.toHex())));
+    if (newData.trimmed().isEmpty()) {
+        Logger::debug("Skipping empty/whitespace data");
+        return;
+    }
+    buffer.append(newData);
+
     while (true) {
         int endIndex = buffer.indexOf('\n');
         if (endIndex == -1) {
-            break; // No complete message yet
+            break; 
         }
 
         QByteArray data = buffer.left(endIndex);
@@ -55,11 +62,8 @@ void ClientHandler::onReadyRead() {
         QJsonParseError parseError;
         QJsonDocument doc = QJsonDocument::fromJson(data, &parseError);
         if (doc.isNull() || !doc.isObject()) {
-            // boolean cannot toString(), ma ko toString ko print dc 
-            // Logger::debug(" Doc is null: " + doc.isNull().toString()); 
-            // Logger::debug(" Doc is not object: " + !doc.isObject().toString());
-            qDebug() << "Json doc is null: " << doc.isNull(); 
-            qDebug() << "Json doc is not object: " << !doc.isObject(); 
+            Logger::debug(QString("Json doc is null: %1").arg(doc.isNull()));
+            Logger::debug(QString("Json doc is not object: %1").arg(!doc.isObject()));
             Logger::error("Received invalid JSON: " + parseError.errorString());
             continue;
         }
@@ -92,12 +96,32 @@ void ClientHandler::cleanup() {
     emit finished();
 }
 
+// void ClientHandler::sendResponse(const QJsonObject& response) {
+//     QJsonDocument doc(response);
+//     QByteArray data = doc.toJson(QJsonDocument::Compact) + "\n";
+//     clientSocket->write(data);
+//     clientSocket->flush();
+//     Logger::json("Sent response", response);
+// }
+
 void ClientHandler::sendResponse(const QJsonObject& response) {
     QJsonDocument doc(response);
     QByteArray data = doc.toJson(QJsonDocument::Compact) + "\n";
-    clientSocket->write(data);
-    clientSocket->flush();
+    
+    Logger::debug("=== Response Debug ===");
+    Logger::debug(QString("Response size before send: %1").arg(data.size()));
+    Logger::debug(QString("Socket state: %1").arg(clientSocket->state()));
+    Logger::debug(QString("Socket is valid: %1").arg(clientSocket->isValid()));
+    Logger::debug(QString("Socket is writable: %1").arg(clientSocket->isWritable()));
+    
+    qint64 bytesWritten = clientSocket->write(data);
+    Logger::debug(QString("Bytes written: %1").arg(bytesWritten));
+    
+    bool flushSuccess = clientSocket->flush();
+    Logger::debug(QString("Flush success: %1").arg(flushSuccess));
+    
     Logger::json("Sent response", response);
+    Logger::debug("=== End Response Debug ===");
 }
 
 void ClientHandler::handleMessage(const QString& toUsername, const QJsonObject& message) {

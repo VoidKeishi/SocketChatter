@@ -1,6 +1,5 @@
 #include "ControllerManager.h"
 #include "network/NetworkController.h"
-#include <QDebug>
 
 ControllerManager* ControllerManager::m_instance = nullptr;
 

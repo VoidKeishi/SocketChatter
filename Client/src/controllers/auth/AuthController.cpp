@@ -1,5 +1,3 @@
-#include <QDebug>
-
 #include "AuthController.h"
 #include "../utils/RequestFactory.h"
 #include "../utils/HashUtility.h"

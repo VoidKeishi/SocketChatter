@@ -1,7 +1,6 @@
 #include "AuthResponseHandler.h"
 #include "../session/UserManager.h"
 #include "../utils/Logger.h"
-#include <QDebug>
 
 AuthResponseHandler::AuthResponseHandler(AuthViewModel* viewModel, QObject* parent)
     : QObject(parent)

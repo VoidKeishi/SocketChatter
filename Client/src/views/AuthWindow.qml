@@ -6,8 +6,9 @@ import QtQuick.Controls.Material
 ApplicationWindow {
     id: authWindow
     width: 540
-    height: 960
+    height: Screen.height - 40
     visible: true
+    visibility: Window.Windowed
     title: qsTr("Login")
 
     Material.theme: Material.Dark

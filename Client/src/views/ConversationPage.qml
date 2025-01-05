@@ -7,7 +7,7 @@ import ConversationViewModel 1.0
 
 Page {
     id: conversationPage
-    property string inConversationWith
+    required property string inConversationWith
     Material.theme: Material.Dark
     Material.accent: Material.Purple
 
@@ -25,7 +25,6 @@ Page {
     }
 
     Component.onCompleted: {
-        console.log("--------In conversation with 2: ", conversationPage.inConversationWith)
         conversationViewModel.setCurrentContact(inConversationWith)
     }
 
@@ -177,7 +176,6 @@ Page {
         }
     }
     onInConversationWithChanged: {
-        console.log("--------In conversation with 3: ", conversationPage.inConversationWith)
         conversationViewModel.setCurrentContact(inConversationWith)
     }
 }

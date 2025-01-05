@@ -76,7 +76,7 @@ ApplicationWindow {
                 id: conversationPage
                 anchors.fill: parent
                 visible: false // Initially hidden
-                property string inConversationWith
+                inConversationWith: contactName
             }
 
             // Include the ManageContactsPage component

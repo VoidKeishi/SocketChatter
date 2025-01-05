@@ -1,5 +1,4 @@
-#ifndef HASHUTILITY_H
-#define HASHUTILITY_H
+#pragma once
 
 #include <QString>
 #include <QCryptographicHash>
@@ -10,5 +9,3 @@ namespace HashUtility {
         return QString(hashed.toHex());
     }
 }
-
-#endif // HASHUTILITY_H

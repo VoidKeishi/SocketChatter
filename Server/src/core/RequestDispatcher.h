@@ -1,7 +1,9 @@
 #pragma once
-#include "../handlers/BaseHandler.h"
+
 #include <QVector>
 #include <QObject>
+
+#include "../handlers/BaseHandler.h"
 
 class RequestDispatcher : public QObject {
     Q_OBJECT

@@ -1,8 +1,9 @@
-#include "DatabaseManager.h"
 #include <QSqlError>
 #include <QSqlQuery>
-#include <QDebug>
 #include <QFile>
+
+#include "DatabaseManager.h"
+#include "../utils/Logger.h"
 
 
 DatabaseManager* DatabaseManager::m_instance = nullptr;
@@ -21,13 +22,13 @@ DatabaseManager* DatabaseManager::instance() {
 
 bool DatabaseManager::init() {
     if (!db.open()) {
-        qCritical() << "Cannot open database:" << db.lastError().text();
+        Logger::error("Cannot open database: " + db.lastError().text());
         return false;
     }
 
     QFile schemaFile(":/src/database/schema.sql");
     if (!schemaFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        qCritical() << "Cannot open schema file";
+        Logger::error("Cannot open schema file");
         return false;
     }
 
@@ -38,14 +39,14 @@ bool DatabaseManager::init() {
     for (const QString& statement : statements) {
         QSqlQuery query(db);
         if (!query.exec(statement.trimmed())) {
-            qCritical() << "Failed to execute:" << statement;
-            qCritical() << "Error:" << query.lastError().text();
+            Logger::error("Failed to execute: " + statement);
+            Logger::error("Error:" + query.lastError().text());            
             db.rollback();
             return false;
         }
     }
     db.commit();
     
-    qDebug() << "Database initialized successfully";
+    Logger::debug("Database initialized successfully");
     return true;
 }

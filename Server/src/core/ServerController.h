@@ -1,5 +1,4 @@
-#ifndef SERVERCONTROLLER_H
-#define SERVERCONTROLLER_H
+#pragma once
 
 #include <QTcpServer>
 #include <QObject>
@@ -31,5 +30,3 @@ private:
     QTcpServer* serverSocket;
     QMap<QString, ClientHandler*> clients;
 };
-
-#endif // SERVERCONTROLLER_H

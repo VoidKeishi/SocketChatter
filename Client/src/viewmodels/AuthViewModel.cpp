@@ -1,5 +1,5 @@
 #include "AuthViewModel.h"
-#include <QDebug>
+#include "../controllers/utils/Logger.h"
 
 AuthViewModel::AuthViewModel(QObject* parent)
     : QObject(parent)
@@ -45,11 +45,11 @@ void AuthViewModel::reset() {
 }
 
 void AuthViewModel::sendRequestLogin(const QString& username, const QString& password) {
-    qDebug() << "Sending login request for user: " << username;
+    Logger::debug("Sending login request for user: " + username);
     emit authActionRequested(AuthAction::Login, username, password);
 }
 
 void AuthViewModel::sendRequestRegister(const QString& username, const QString& password) {
-    qDebug() << "Sending register request for user: " << username;
+    Logger::debug("Sending register request for user: " + username);
     emit authActionRequested(AuthAction::Register, username, password);
 }

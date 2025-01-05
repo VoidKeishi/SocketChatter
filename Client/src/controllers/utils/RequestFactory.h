@@ -1,5 +1,4 @@
-#ifndef REQUEST_FACTORY_H
-#define REQUEST_FACTORY_H
+#pragma once
 
 #include <QJsonObject>
 #include <QString>
@@ -130,5 +129,3 @@ namespace RequestFactory
     }
 
 }
-
-#endif // REQUEST_FACTORY_H

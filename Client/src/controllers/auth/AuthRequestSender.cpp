@@ -3,6 +3,7 @@
 #include "AuthRequestSender.h"
 #include "../utils/RequestFactory.h"
 #include "../utils/HashUtility.h"
+#include "../utils/Logger.h"
 #include "../network/NetworkController.h"
 
 AuthRequestSender::AuthRequestSender(QObject* parent)
@@ -13,17 +14,17 @@ AuthRequestSender::AuthRequestSender(QObject* parent)
 }
 
 void AuthRequestSender::requestLogin(const QString& username, const QString& password) {
-    qDebug() << "Login requested for user:" << username;
+    Logger::debug("Login requested for user: " + username);
     QString passwordHash = HashUtility::hashPassword(password);
     QByteArray requestData = RequestFactory::createLoginRequest(username, passwordHash);
-    qDebug() << "Emitting login request";
+    Logger::debug("Emitting login request");
     emit sendRequest(requestData);
 }
 
 void AuthRequestSender::requestRegister(const QString& username, const QString& password) {
-    qDebug() << "Register requested for user:" << username;
+    Logger::debug("Register requested for user: " + username);
     QString passwordHash = HashUtility::hashPassword(password);
     QByteArray requestData = RequestFactory::createRegisterRequest(username, passwordHash);
-    qDebug() << "Emitting register request";
+    Logger::debug("Emitting register request");
     emit sendRequest(requestData);
 }

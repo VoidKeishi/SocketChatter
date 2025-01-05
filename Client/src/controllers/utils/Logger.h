@@ -1,5 +1,4 @@
-#ifndef LOGGER_H
-#define LOGGER_H
+#pragma once
 
 #include <QJsonObject>
 #include <QString>
@@ -208,5 +207,3 @@ private:
             .arg(coloredJson);
     }
 };
-
-#endif // LOGGER_H

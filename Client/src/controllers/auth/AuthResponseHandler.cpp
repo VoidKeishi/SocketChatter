@@ -16,7 +16,7 @@ void AuthResponseHandler::handleLoginResponse(const QJsonObject& response) {
     
     if (success) {
         QString username = response.value("username").toString();
-        qDebug() << "Setting current user:" << username;
+        Logger::debug("Setting current user: " + username);
         UserManager::instance()->setCurrentUser(username);
         m_viewModel->setLoggedIn(true);
     }

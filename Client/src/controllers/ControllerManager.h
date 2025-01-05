@@ -1,5 +1,4 @@
-#ifndef CONTROLLERMANAGER_H
-#define CONTROLLERMANAGER_H
+#pragma once
 
 #include <QObject>
 
@@ -39,5 +38,3 @@ private:
     ContactViewModel* m_contactViewModel;
     ConversationViewModel* m_conversationViewModel;
 };
-
-#endif // CONTROLLERMANAGER_H

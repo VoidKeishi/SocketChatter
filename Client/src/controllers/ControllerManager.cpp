@@ -22,6 +22,10 @@ ControllerManager::ControllerManager(QObject *parent) : QObject(parent) {
         // Get the singleton instance of NetworkController
         networkController = NetworkController::instance();
         networkController->connectToServer("localhost", 3000);
+
+        // to send input text message request to server
+        connect(messagesController, &MessagesController::sendRequest, 
+                networkController, &NetworkController::sendData);
 }
 
 ControllerManager* ControllerManager::instance() {

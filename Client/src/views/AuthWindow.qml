@@ -63,6 +63,14 @@ ApplicationWindow {
                     Layout.fillWidth: true
                     enabled: !authViewModel.isLoading
                     Material.accent: Material.Purple
+
+                    Keys.onReturnPressed: {
+                        if (!authViewModel.isLoading && usernameField.text && passwordField.text) {
+                            authViewModel.sendRequestLogin(usernameField.text, passwordField.text)
+                        } else if (!passwordField.text) {
+                            passwordField.forceActiveFocus(); // Move focus to the password field
+                        }
+                    }
                 }
 
                 TextField {
@@ -72,6 +80,12 @@ ApplicationWindow {
                     Layout.fillWidth: true
                     enabled: !authViewModel.isLoading
                     Material.accent: Material.Purple
+
+                    Keys.onReturnPressed: {
+                        if (!authViewModel.isLoading && usernameField.text && passwordField.text) {
+                            authViewModel.sendRequestLogin(usernameField.text, passwordField.text)
+                        }
+                    }
                 }
 
                 Button {

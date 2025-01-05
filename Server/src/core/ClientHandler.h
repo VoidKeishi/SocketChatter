@@ -7,6 +7,7 @@
 #include "RequestDispatcher.h"
 #include "../handlers/AuthHandler.h"
 #include "../handlers/ContactHandler.h"
+#include "../handlers/MessageHandler.h"
 
 class ClientHandler : public QObject {
     Q_OBJECT
@@ -36,6 +37,7 @@ private:
     RequestDispatcher* dispatcher;
     AuthHandler* authHandler;
     ContactHandler* contactHandler;
+    MessageHandler* messageHandler;
 
     QString m_username;
     void processRequest(const QJsonObject& request);

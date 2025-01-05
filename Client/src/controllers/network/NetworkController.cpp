@@ -37,7 +37,15 @@ void NetworkController::onConnected() {
 void NetworkController::sendData(const QByteArray &data) {
     Logger::json("Sending data", QJsonDocument::fromJson(data).object());
     if (socket->state() == QAbstractSocket::ConnectedState) {
-        socket->write(data);
+        QByteArray framedData = data + '\n';
+        qint64 bytesWritten = socket->write(framedData);
+        if (bytesWritten == -1) {
+            Logger::error(QString("Failed to write to socket. Error: %1")
+                .arg(socket->errorString()));
+            return;
+        } else 
+            Logger::info(QString("Successfully wrote %1 bytes").arg(bytesWritten));
+            
         socket->flush();
     } else {
         Logger::error("Socket is not connected");

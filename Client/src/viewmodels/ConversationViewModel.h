@@ -6,7 +6,7 @@
 #include <QVector>
 #include <QAbstractListModel>
 #include <QVariant>
-
+#include <QDebug>
 
 struct Message {
     QString author;

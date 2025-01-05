@@ -2,6 +2,7 @@
 
 #include "AuthHandler.h"
 #include "../utils/Logger.h"
+#include "../utils/ResponseFactory.h"
 
 AuthHandler::AuthHandler(DatabaseManager* db) 
     : BaseHandler(nullptr), userRepo(db) {
@@ -19,24 +20,16 @@ void AuthHandler::handleLogin(const QJsonObject& request) {
     Logger::debug(QString("Processing login for user: %1").arg(username));
 
     if (userRepo.validateUser(username, passwordHash)) {
-        emit responseReady({
-            {"type", "LOGIN_RESPONSE"},
-            {"timestamp", QDateTime::currentSecsSinceEpoch()},
-            {"payload", QJsonObject{
-                {"success", true},
-                {"message", "Login successful"},
-                {"username", username}
-            }}
-        });
+        emit responseReady(ResponseFactory::createLoginResponse(
+            true, 
+            "Login successful", 
+            username
+        ));
     } else {
-        emit responseReady({
-            {"type", "LOGIN_RESPONSE"},
-            {"timestamp", QDateTime::currentSecsSinceEpoch()},
-            {"payload", QJsonObject{
-                {"success", false},
-                {"message", "Invalid credentials"}
-            }}
-        });
+        emit responseReady(ResponseFactory::createLoginResponse(
+            false, 
+            "Invalid credentials"
+        ));
     }
 }
 
@@ -48,34 +41,22 @@ void AuthHandler::handleRegister(const QJsonObject& request) {
     Logger::debug(QString("Processing registration for user: %1").arg(username));
     
     if (userRepo.userExists(username)) {
-        emit responseReady({
-            {"type", "REGISTER_RESPONSE"},
-            {"timestamp", QDateTime::currentSecsSinceEpoch()},
-            {"payload", QJsonObject{
-                {"success", false},
-                {"message", "Username already exists"}
-            }}
-        });
+        emit responseReady(ResponseFactory::createRegisterResponse(
+            false, 
+            "Username already exists"
+        ));
         return;
     }
 
     if (userRepo.createUser(username, passwordHash)) {
-        emit responseReady({
-            {"type", "REGISTER_RESPONSE"},
-            {"timestamp", QDateTime::currentSecsSinceEpoch()},
-            {"payload", QJsonObject{
-                {"success", true},
-                {"message", "Registration successful"}
-            }}
-        });
+        emit responseReady(ResponseFactory::createRegisterResponse(
+           true, 
+           "Registration successfull" 
+        ));
     } else {
-        emit responseReady({
-            {"type", "REGISTER_RESPONSE"},
-            {"timestamp", QDateTime::currentSecsSinceEpoch()},
-            {"payload", QJsonObject{
-                {"success", false},
-                {"message", "Failed to create user"}
-            }}
-        });
+        emit responseReady(ResponseFactory::createRegisterResponse(
+            false, 
+            "Failed to create user"
+        ));
     }
 }

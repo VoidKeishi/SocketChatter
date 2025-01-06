@@ -17,6 +17,9 @@ public:
     QVector<QString> getPendingRequests(const QString& username);
     bool areFriends(const QString& user1, const QString& user2);
 
+    bool updateUserOnlineStatus(const QString& username, bool online);
+    QVector<QPair<QString, bool>> getFriendListWithStatus(const QString& username);
+
 private:
     DatabaseManager* db;
 };

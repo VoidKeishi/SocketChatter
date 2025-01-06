@@ -4,6 +4,7 @@ CREATE TABLE IF NOT EXISTS users (
     password TEXT NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
+ALTER TABLE users ADD COLUMN online BOOLEAN DEFAULT FALSE;
 
 -- Friend requests table
 CREATE TABLE IF NOT EXISTS friend_requests (
@@ -36,6 +37,8 @@ CREATE TABLE IF NOT EXISTS messages (
     FOREIGN KEY(sender) REFERENCES users(username),
     FOREIGN KEY(receiver) REFERENCES users(username)
 );
+
+
 
 CREATE TABLE IF NOT EXISTS groups (
     group_name TEXT PRIMARY KEY,

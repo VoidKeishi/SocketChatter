@@ -264,4 +264,16 @@ namespace ResponseFactory
             }}
         };
     }
+
+    inline QJsonObject createOnlineStatusResponse(const QJsonArray& statusArray) {
+        return QJsonObject {
+            {"type", "ONLINE_STATUS_RESPONSE"},
+            {"timestamp", QDateTime::currentSecsSinceEpoch()},
+            {"payload", QJsonObject{
+                {"success", true},
+                {"statuses", statusArray}
+            }}
+        };
+    }
+    
 }

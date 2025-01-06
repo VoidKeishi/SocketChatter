@@ -72,6 +72,13 @@ Page {
                                 fillMode: Image.PreserveAspectFit
                             }
 
+                            Rectangle {
+                                width: 8
+                                height: 8
+                                radius: width/2
+                                color: modelData.online ? "#4CAF50" : "#757575"
+                            }
+
                             Label {
                                 text: modelData
                                 font.pixelSize: 16

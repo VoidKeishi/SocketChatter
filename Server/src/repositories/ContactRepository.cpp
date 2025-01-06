@@ -143,3 +143,31 @@ bool ContactRepository::deleteFriendship(const QString& user1, const QString& us
     
     return query.exec();
 }
+
+bool ContactRepository::updateUserOnlineStatus(const QString& username, bool online) {
+    QSqlQuery query(db->database());
+    query.prepare("UPDATE users SET online = ? WHERE username = ?");
+    query.addBindValue(online);
+    query.addBindValue(username);
+    return query.exec();
+}
+
+QVector<QPair<QString, bool>> ContactRepository::getFriendListWithStatus(const QString& username) {
+    QVector<QPair<QString, bool>> friends;
+    QSqlQuery query(db->database());
+    query.prepare(
+        "SELECT u.username, u.online FROM users u "
+        "INNER JOIN friends f ON (f.user2 = u.username OR f.user1 = u.username) "
+        "WHERE (f.user1 = ? OR f.user2 = ?) AND u.username != ?"
+    );
+    query.addBindValue(username);
+    query.addBindValue(username);
+    query.addBindValue(username);
+    
+    if (query.exec()) {
+        while (query.next()) {
+            friends.append({query.value(0).toString(), query.value(1).toBool()});
+        }
+    }
+    return friends;
+}

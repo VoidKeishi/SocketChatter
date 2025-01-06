@@ -2,6 +2,7 @@
 
 #include <QObject>
 #include <QStringList>
+#include <QTimer>
 
 enum class ContactAction {
     SendRequest,
@@ -11,6 +12,7 @@ enum class ContactAction {
     FetchFriends,
     FetchSentRequests,
     FetchReceivedRequests,
+    FetchOnlineStatus
 };
 
 
@@ -22,6 +24,8 @@ class ContactViewModel : public QObject {
     // Received requests
     Q_PROPERTY(QStringList receivedRequests READ receivedRequests NOTIFY receivedRequestsChanged)
     // Accepted friends
+    Q_PROPERTY(QStringList friends READ friends NOTIFY friendsChanged)
+    // fetch online status
     Q_PROPERTY(QStringList friends READ friends NOTIFY friendsChanged)
 
 public:
@@ -43,6 +47,8 @@ public:
     void setFriends(const QStringList& friends);
     void setSentRequests(const QStringList& sentRequests);
     void setReceivedRequests(const QStringList& receivedRequests);
+    void startStatusTimer();
+    void stopStatusTimer();
 
 public slots:
     // Methods called by View
@@ -69,6 +75,8 @@ private:
 
     QStringList m_groupInvitations;
     QStringList m_groups;
+    QTimer* statusTimer;
+    void fetchOnlineStatuses();
 
     QString m_statusMessage;
 };

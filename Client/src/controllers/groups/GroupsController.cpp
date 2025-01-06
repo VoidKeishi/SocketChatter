@@ -1,61 +1,53 @@
-#include "MessagesController.h"
-#include "MessagesRequestSender.h"
-#include "MessagesResponseHandler.h"
-#include "MessagesNotificationHandler.h"
+#include "GroupsController.h"
+#include "GroupsRequestSender.h"
+#include "GroupsResponseHandler.h"
+#include "GroupsNotificationHandler.h"
 
-MessagesController::MessagesController(ConversationViewModel* viewModel, QObject* parent)
+GroupsController::GroupsController(GroupViewModel* viewModel, QObject* parent)
     : QObject(parent) 
     , m_viewModel(viewModel) 
-    , m_requestSender(new MessagesRequestSender(this))
-    , m_responseHandler(new MessagesResponseHandler(viewModel, this))
-    , m_notificationHandler(new MessagesNotificationHandler(viewModel, this))
+    , m_requestSender(new GroupsRequestSender(this))
+    , m_responseHandler(new GroupsResponseHandler(viewModel, this))
+    , m_notificationHandler(new GroupsNotificationHandler(viewModel, this))
 {
     handlers = {
         // Responses
-        {"SEND_MESSAGE_RESPONSE", [this](const QJsonObject& p) { m_responseHandler->handleSendMessageResponse(p); }},
-        {"FETCH_MESSAGES_RESPONSE", [this](const QJsonObject& p) { m_responseHandler->handleFetchMessagesResponse(p); }},
+        { "GROUP_CREATE_RESPONSE", [this](const QJsonObject& payload) { m_responseHandler->handleCreateGroupResponse(payload); }},
+        { "GROUP_FETCH_RESPONSE",  [this](const QJsonObject& payload) { m_responseHandler->handleFetchGroupsResponse(payload); }},
+
         // Notifications
-        {"MESSAGE_NOTIFICATION", [this](const QJsonObject& p) { m_notificationHandler->handleMessageNotification(p); }},
+        { "GROUP_UPDATED_NOTIFICATION", [this](const QJsonObject& payload) { m_notificationHandler->handleGroupUpdatedNotification(payload); }},
+        { "GROUP_MEMBER_ADDED_NOTIFICATION", [this](const QJsonObject& payload) { m_notificationHandler->handleGroupMemberAddedNotification(payload); }},
     };
 
-    connect(m_viewModel, &ConversationViewModel::messageActionRequested, 
-            this, &MessagesController::handleMessageAction);
-    connect(this, &MessagesController::sendRequest, 
+    connect(m_viewModel, &GroupViewModel::groupActionRequested, 
+            this, &GroupsController::handleGroupAction);
+    connect(this, &GroupsController::sendRequest, 
             NetworkController::instance(), &NetworkController::sendData);
 }
 
-bool MessagesController::canHandle(const QString& type) const {
+bool GroupsController::canHandle(const QString& type) const {
     return handlers.contains(type);
 }
 
 // Handle responses and notifications
-void MessagesController::handle(const QString& type, const QJsonObject& payload) {
+void GroupsController::handle(const QString& type, const QJsonObject& payload) {
     if (handlers.contains(type)) {
         handlers[type](payload);
     }
 }
 // Handle UI actions
-void MessagesController::handleMessageAction(MessageAction action, const QString& sender, const QString& receiver, const QString& content) {
+void GroupsController::handleGroupAction(GroupAction action, const QString& sender, const QString& receiver, const QString& content) {
     switch (action) {
-    case MessageAction::SendMessage:
-        Logger::debug("Sending message");
-        m_requestSender->requestSendMessage(sender, receiver, content);
+    case GroupAction::CreateGroup:
+        Logger::debug("CreateGroup");
+        m_requestSender->requestCreateGroup(sender, receiver, content);
         break;
-    case MessageAction::FetchMessages:
-        m_requestSender->requestFetchMessages(sender, receiver);
+    case GroupAction::FetchGroups:
+        m_requestSender->requestFetchGroups(sender);
         break;
     default:
-        Logger::error("Invalid message action");
+        Logger::error("Invalid group action");
         break;
     }
-}
-
-void MessagesController::sendMessage(const QString& sender, const QString& receiver, const QString& content) {
-    QByteArray requestData = RequestFactory::createSendMessageRequest(sender, receiver, content);
-    emit sendRequest(requestData);
-}
-
-void MessagesController::fetchMessages(const QString& sender, const QString& receiver) {
-    QByteArray requestData = RequestFactory::createFetchMessagesRequest(sender, receiver);
-    emit sendRequest(requestData);
 }

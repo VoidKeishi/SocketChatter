@@ -12,11 +12,13 @@ ClientHandler::ClientHandler(QTcpSocket* socket, QObject* parent)
     , authHandler(new AuthHandler(DatabaseManager::instance())) 
     , contactHandler(new ContactHandler(DatabaseManager::instance())) 
     , messageHandler(new MessageHandler(DatabaseManager::instance()))
+    , groupHandler(new GroupHandler(DatabaseManager::instance()))
 
 {
     dispatcher->registerHandler(authHandler);
     dispatcher->registerHandler(contactHandler);
     dispatcher->registerHandler(messageHandler);
+    dispatcher->registerHandler(groupHandler);
     
         
     connect(clientSocket, &QTcpSocket::readyRead, 
@@ -96,32 +98,12 @@ void ClientHandler::cleanup() {
     emit finished();
 }
 
-// void ClientHandler::sendResponse(const QJsonObject& response) {
-//     QJsonDocument doc(response);
-//     QByteArray data = doc.toJson(QJsonDocument::Compact) + "\n";
-//     clientSocket->write(data);
-//     clientSocket->flush();
-//     Logger::json("Sent response", response);
-// }
-
 void ClientHandler::sendResponse(const QJsonObject& response) {
     QJsonDocument doc(response);
     QByteArray data = doc.toJson(QJsonDocument::Compact) + "\n";
-    
-    Logger::debug("=== Response Debug ===");
-    Logger::debug(QString("Response size before send: %1").arg(data.size()));
-    Logger::debug(QString("Socket state: %1").arg(clientSocket->state()));
-    Logger::debug(QString("Socket is valid: %1").arg(clientSocket->isValid()));
-    Logger::debug(QString("Socket is writable: %1").arg(clientSocket->isWritable()));
-    
-    qint64 bytesWritten = clientSocket->write(data);
-    Logger::debug(QString("Bytes written: %1").arg(bytesWritten));
-    
-    bool flushSuccess = clientSocket->flush();
-    Logger::debug(QString("Flush success: %1").arg(flushSuccess));
-    
+    clientSocket->write(data);
+    clientSocket->flush();
     Logger::json("Sent response", response);
-    Logger::debug("=== End Response Debug ===");
 }
 
 void ClientHandler::handleMessage(const QString& toUsername, const QJsonObject& message) {

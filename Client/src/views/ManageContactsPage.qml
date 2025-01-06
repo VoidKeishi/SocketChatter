@@ -41,7 +41,6 @@ Page {
             }
         }
 
-        // Tab Bar
         TabBar {
             id: tabBar
             Layout.fillWidth: true

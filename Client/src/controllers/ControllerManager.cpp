@@ -12,11 +12,15 @@ ControllerManager::ControllerManager(QObject *parent) : QObject(parent) {
         m_conversationViewModel = new ConversationViewModel(this);
         messagesController = new MessagesController(m_conversationViewModel, this);
 
+        m_groupViewModel = new GroupViewModel(this);
+        groupsController = new GroupsController(m_groupViewModel, this);
+
         // Instantiate ResponseDispatcher
         responseDispatcher = new ResponseDispatcher(this);
         responseDispatcher->registerController(authController);
         responseDispatcher->registerController(contactsController);
         responseDispatcher->registerController(messagesController);
+        responseDispatcher->registerController(groupsController);
 }
 
 ControllerManager* ControllerManager::instance() {

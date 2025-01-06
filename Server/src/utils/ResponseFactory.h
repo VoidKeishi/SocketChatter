@@ -157,4 +157,112 @@ namespace ResponseFactory
                 {"messages", QJsonDocument::fromJson(messagesString.toUtf8()).array()}}}};
     }
 
+    inline QJsonObject createGroupCreateResponse(bool success, const QString& message, const QString& groupName, const QString& groupDetails) {
+        return QJsonObject {
+            {"type", "GROUP_CREATE_RESPONSE"},
+            {"timestamp", QDateTime::currentSecsSinceEpoch()},
+            {"payload", QJsonObject{
+                {"success", success},
+                {"message", message},
+                {"groupName", groupName},
+                {"groupDetails", groupDetails}
+            }}
+        };
+    }
+
+    inline QJsonObject createGroupFetchResponse(bool success, const QString& message, const QList<QPair<QString, QString>>& groups) {
+        QJsonArray groupArray;
+        for (const auto& group : groups) {
+            QJsonObject groupObj;
+            groupObj["groupId"] = group.first;
+            groupObj["groupName"] = group.second;
+            groupArray.append(groupObj);
+        }
+
+        return QJsonObject {
+            {"type", "GROUP_FETCH_RESPONSE"},
+            {"timestamp", QDateTime::currentSecsSinceEpoch()},
+            {"payload", QJsonObject{
+                {"success", success},
+                {"message", message},
+                {"groups", groupArray}
+            }}
+        };
+    }
+
+    inline QJsonObject createGroupDeleteResponse(bool success, const QString& message, const QString& groupName) {
+        return QJsonObject {
+            {"type", "GROUP_DELETE_RESPONSE"},
+            {"timestamp", QDateTime::currentSecsSinceEpoch()},
+            {"payload", QJsonObject{
+                {"success", success},
+                {"message", message},
+                {"groupName", groupName}
+            }}
+        };
+    }
+
+    inline QJsonObject createGroupDeletedNotification(const QString& message, const QString& groupName, const QJsonArray& members) {
+        return QJsonObject {
+            {"type", "GROUP_DELETED_NOTIFICATION"},
+            {"timestamp", QDateTime::currentSecsSinceEpoch()},
+            {"payload", QJsonObject{
+                {"message", message},
+                {"groupName", groupName},
+                {"members", members}
+            }}
+        };
+    }
+
+    inline QJsonObject createGroupInviteResponse(bool success, const QString& message, const QString& groupName, const QString& invitee) {
+        return QJsonObject {
+            {"type", "GROUP_INVITE_RESPONSE"},
+            {"timestamp", QDateTime::currentSecsSinceEpoch()},
+            {"payload", QJsonObject{
+                {"success", success},
+                {"message", message},
+                {"groupName", groupName},
+                {"invitee", invitee}
+            }}
+        };
+    }
+
+    inline QJsonObject createGroupInviteResponseAck(bool success, bool accept, const QString& message, const QString& groupName, const QString& member) {
+        return QJsonObject {
+            {"type", "GROUP_INVITE_RESPONSE_ACK"},
+            {"timestamp", QDateTime::currentSecsSinceEpoch()},
+            {"payload", QJsonObject{
+                {"success", success},
+                {"accept", accept},
+                {"message", message},
+                {"groupName", groupName},
+                {"member", member}
+            }}
+        };
+    }
+
+    inline QJsonObject createGroupInviteNotification(const QString& groupName, const QString& inviter, const QString& invitee) {
+        return QJsonObject {
+            {"type", "GROUP_INVITE_NOTIFICATION"},
+            {"timestamp", QDateTime::currentSecsSinceEpoch()},
+            {"payload", QJsonObject{
+                {"groupName", groupName},
+                {"inviter", inviter},
+                {"invitee", invitee}
+            }}
+        };
+    }
+
+    inline QJsonObject createGroupInviteResponseNotification(const QString& groupName, const QString& responder, bool accepted, const QString& creator) {
+        return QJsonObject {
+            {"type", "GROUP_INVITE_RESPONSE_NOTIFICATION"},
+            {"timestamp", QDateTime::currentSecsSinceEpoch()},
+            {"payload", QJsonObject{
+                {"groupName", groupName},
+                {"responder", responder},
+                {"accepted", accepted},
+                {"creator", creator}
+            }}
+        };
+    }
 }

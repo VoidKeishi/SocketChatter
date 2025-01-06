@@ -130,4 +130,60 @@ namespace RequestFactory
         return QJsonDocument(request).toJson(QJsonDocument::Compact) + '\n';
     }
 
+    // Groups requests
+    inline QByteArray createGroupCreateRequest(const QString& sender, const QString& groupName, const QString& groupDetails)
+    {
+        QJsonObject request = {
+            {"type", "GROUP_CREATE_REQUEST"},
+            {"timestamp", QDateTime::currentSecsSinceEpoch()},
+            {"payload", QJsonObject{
+                {"sender", sender},
+                {"groupName", groupName}}}};
+        return QJsonDocument(request).toJson(QJsonDocument::Compact) + '\n';
+    }
+
+    inline QByteArray createGroupFetchRequest(const QString& sender)
+    {
+        QJsonObject request = {
+            {"type", "GROUP_FETCH_REQUEST"},
+            {"timestamp", QDateTime::currentSecsSinceEpoch()},
+            {"payload", QJsonObject{
+                {"sender", sender}}}};
+        return QJsonDocument(request).toJson(QJsonDocument::Compact) + '\n';
+    }
+
+    inline QByteArray createGroupDeleteRequest(const QString& sender, const QString& groupName)
+    {
+        QJsonObject request = {
+            {"type", "GROUP_DELETE_REQUEST"},
+            {"timestamp", QDateTime::currentSecsSinceEpoch()},
+            {"payload", QJsonObject{
+                {"sender", sender},
+                {"groupName", groupName}}}};
+        return QJsonDocument(request).toJson(QJsonDocument::Compact) + '\n';
+    }
+
+    inline QByteArray createGroupInviteRequest(const QString& sender, const QString& groupName, const QString& invitee)
+    {
+        QJsonObject request = {
+            {"type", "GROUP_INVITE_REQUEST"},
+            {"timestamp", QDateTime::currentSecsSinceEpoch()},
+            {"payload", QJsonObject{
+                {"sender", sender},
+                {"groupName", groupName},
+                {"invitee", invitee}}}};
+        return QJsonDocument(request).toJson(QJsonDocument::Compact) + '\n';
+    }
+
+    inline QByteArray createGroupInviteResponseRequest(const QString& sender, const QString& groupName, bool accept)
+    {
+        QJsonObject request = {
+            {"type", "GROUP_INVITE_RESPONSE_REQUEST"},
+            {"timestamp", QDateTime::currentSecsSinceEpoch()},
+            {"payload", QJsonObject{
+                {"sender", sender},
+                {"groupName", groupName},
+                {"accept", accept}}}};
+        return QJsonDocument(request).toJson(QJsonDocument::Compact) + '\n';
+    }
 }

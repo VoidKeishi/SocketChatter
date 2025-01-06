@@ -55,6 +55,13 @@ ApplicationWindow {
                     conversationPage.visible = false
                     welcomeMessage.visible = false
                 }
+
+                onNavigateToManageGroups: function() {
+                    manageGroupsPage.visible = true
+                    conversationPage.visible = false
+                    manageContactsPage.visible = false
+                    welcomeMessage.visible = false
+                }
             }
         }
 
@@ -87,6 +94,17 @@ ApplicationWindow {
 
                 onNavigateBack: function() {
                     manageContactsPage.visible = false
+                    welcomeMessage.visible = true
+                }
+            }
+
+            ManageGroupsPage {
+                id: manageGroupsPage
+                anchors.fill: parent
+                visible: false
+
+                onNavigateBack: function() {
+                    manageGroupsPage.visible = false
                     welcomeMessage.visible = true
                 }
             }

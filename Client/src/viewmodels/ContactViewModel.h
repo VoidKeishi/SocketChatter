@@ -13,6 +13,8 @@ enum class ContactAction {
     FetchReceivedRequests,
 };
 
+
+
 class ContactViewModel : public QObject {
     Q_OBJECT
     // Sent requests
@@ -64,6 +66,9 @@ private:
     QStringList m_sentRequests;
     QStringList m_receivedRequests;
     QStringList m_friends;
+
+    QStringList m_groupInvitations;
+    QStringList m_groups;
 
     QString m_statusMessage;
 };

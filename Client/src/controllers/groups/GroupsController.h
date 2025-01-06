@@ -9,7 +9,7 @@
 #include "GroupsResponseHandler.h"
 #include "GroupsNotificationHandler.h"
 #include "../IController.h"
-#include "../../viewmodels/ConversationViewModel.h"
+#include "../../viewmodels/GroupViewModel.h"
 #include "../session/UserManager.h"
 #include "../utils/RequestFactory.h"
 #include "../utils/Logger.h"
@@ -18,22 +18,19 @@
 class GroupsController : public QObject, public IController {
     Q_OBJECT
 public:
-    explicit GroupsController(ConversationViewModel* viewModel, QObject* parent = nullptr);
+    explicit GroupsController(GroupViewModel* viewModel, QObject* parent = nullptr);
     // IController interface
     bool canHandle(const QString& type) const override;
     void handle(const QString& type, const QJsonObject& payload) override;
 
 public slots:
-    void sendMessage(const QString& sender, const QString& receiver, const QString& content);
-    void fetchGroups(const QString& sender, const QString& receiver);
-
-    void handleMessageAction(MessageAction action, const QString& sender, const QString& receiver, const QString& content);
+    void handleGroupAction(GroupAction action, const QString& sender, const QString& receiver, const QString& content);
 
 signals:
     void sendRequest(const QByteArray& data);
 
 private:
-    ConversationViewModel* m_viewModel;
+    GroupViewModel* m_viewModel;
     GroupsRequestSender* m_requestSender;
     GroupsResponseHandler* m_responseHandler;
     GroupsNotificationHandler* m_notificationHandler;

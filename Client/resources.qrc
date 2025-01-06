@@ -5,6 +5,7 @@
         <file>src/views/ContactPage.qml</file>
         <file>src/views/ConversationPage.qml</file>
         <file>src/views/ManageContactsPage.qml</file>
+        <file>src/views/ManageGroupsPage.qml</file>
     </qresource>
     <qresource prefix="/">
         <file>src/views/assets/man0.png</file>
@@ -26,5 +27,6 @@
         <file>src/views/assets/check_circle.png</file>
         <file>src/views/assets/remove_circle.png</file>
         <file>src/views/assets/cancel.png</file>
+        <file>src/views/assets/group.png</file>
     </qresource>
 </RCC>

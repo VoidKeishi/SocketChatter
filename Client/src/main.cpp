@@ -48,10 +48,12 @@ int main(int argc, char *argv[]) {
     engine.rootContext()->setContextProperty("authController", manager->authController);
     engine.rootContext()->setContextProperty("contactsController", manager->contactsController);
     engine.rootContext()->setContextProperty("messagesController", manager->messagesController);
+    engine.rootContext()->setContextProperty("groupsController", manager->groupsController);
     engine.rootContext()->setContextProperty("authViewModel", manager->authViewModel());
     engine.rootContext()->setContextProperty("contactViewModel", manager->contactViewModel());
     engine.rootContext()->setContextProperty("conversationViewModel", manager->conversationViewModel());
-
+    engine.rootContext()->setContextProperty("groupViewModel", manager->groupViewModel());
+    
     // Load initial QML (AuthWindow)
     engine.load(QUrl(QStringLiteral("qrc:/src/views/AuthWindow.qml")));
     if (engine.rootObjects().isEmpty())

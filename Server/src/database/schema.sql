@@ -36,3 +36,32 @@ CREATE TABLE IF NOT EXISTS messages (
     FOREIGN KEY(sender) REFERENCES users(username),
     FOREIGN KEY(receiver) REFERENCES users(username)
 );
+
+CREATE TABLE IF NOT EXISTS groups (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    group_name TEXT UNIQUE NOT NULL,
+    creator TEXT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    timestamp BIGINT NOT NULL,
+    FOREIGN KEY(creator) REFERENCES users(username)
+);
+
+CREATE TABLE IF NOT EXISTS group_members (
+    group_id INTEGER NOT NULL,
+    member TEXT NOT NULL,
+    status TEXT CHECK(status IN ('pending', 'accepted', 'rejected')) NOT NULL DEFAULT 'pending',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(group_id) REFERENCES groups(id),
+    FOREIGN KEY(member) REFERENCES users(username),
+    PRIMARY KEY(group_id, member)
+);
+
+CREATE TABLE IF NOT EXISTS group_messages (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    group_id INTEGER NOT NULL,
+    sender TEXT NOT NULL,
+    content TEXT NOT NULL,
+    timestamp BIGINT NOT NULL,
+    FOREIGN KEY(group_id) REFERENCES groups(id),
+    FOREIGN KEY(sender) REFERENCES users(username)
+);

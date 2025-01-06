@@ -1,205 +1,201 @@
-#include <QSqlError>
-#include <QSqlQuery>
-
 #include "GroupRepository.h"
 #include "../utils/Logger.h"
+#include <QSqlQuery>
+#include <QSqlError>
+#include <QVariant>
+#include <QVector>
+#include <QPair>
+#include <QDateTime>
 
-GroupRepository::GroupRepository(DatabaseManager* db) : db(db) {}
+// Constructor
+GroupRepository::GroupRepository(DatabaseManager* dbManager)
+    : db(dbManager)
+{}
 
-bool GroupRepository::createGroupChat(const QString& groupname, const QString& username) {
+// Create a new group chat
+bool GroupRepository::createGroupChat(const QString& groupName, const QString& creator) {
+    if (groupName.trimmed().isEmpty()) {
+        Logger::error("Group name cannot be empty.");
+        return false;
+    }
+
     QSqlQuery query(db->database());
-    query.prepare("INSERT INTO groups (group_name, creator, timestamp) VALUES (?, ?, ?)");
-    query.addBindValue(groupname);
-    query.addBindValue(username);
+    query.prepare("INSERT INTO groups (group_name, creator, created_at) VALUES (?, ?, ?)");
+    query.addBindValue(groupName);
+    query.addBindValue(creator);
+    query.addBindValue(QDateTime::currentDateTime().toString(Qt::ISODate));
+
+    if (!query.exec()) {
+        Logger::error("Failed to create group: " + query.lastError().text());
+        return false;
+    }
+
+    // Add creator as a member without status
+    return addMember(groupName, creator);
+}
+
+// Delete a group chat
+bool GroupRepository::deleteGroupChat(const QString& groupName, const QString& sender) {
+    // Verify sender is the creator
+    QString creator = getGroupCreator(groupName);
+    if (creator != sender) {
+        Logger::error("Only the group creator can delete the group.");
+        return false;
+    }
+
+    QSqlQuery query(db->database());
+    query.prepare("DELETE FROM groups WHERE group_name = ?");
+    query.addBindValue(groupName);
+
+    if (!query.exec()) {
+        Logger::error("Failed to delete group: " + query.lastError().text());
+        return false;
+    }
+
+    // Due to ON DELETE CASCADE, related records in group_members and group_invitations are deleted automatically
+    return true;
+}
+
+// Invite a member to the group
+bool GroupRepository::inviteMember(const QString& groupName, const QString& sender, const QString& invitee) {
+    // Check if sender is a member
+    if (!isMember(groupName, sender)) {
+        Logger::error("Sender is not a member of the group.");
+        return false;
+    }
+
+    QSqlQuery query(db->database());
+    query.prepare("INSERT INTO group_invitations (group_name, inviter, invitee, timestamp) VALUES (?, ?, ?, ?)");
+    query.addBindValue(groupName);
+    query.addBindValue(sender);
+    query.addBindValue(invitee);
     query.addBindValue(QDateTime::currentSecsSinceEpoch());
+
     if (!query.exec()) {
-        qDebug() << "Failed to create group chat:" << query.lastError();
+        Logger::error("Failed to invite member: " + query.lastError().text());
         return false;
     }
+
     return true;
 }
 
-bool GroupRepository::createGroupMember(const QString& groupId, const QString& username, const QString& status) {
+// Accept a group invitation
+bool GroupRepository::acceptGroupInvitation(const QString& groupName, const QString& username) {
     QSqlQuery query(db->database());
-    query.prepare("INSERT INTO group_members (group_id, member, status) VALUES (?, ?, ?)");
-    query.addBindValue(groupId);
+    query.prepare("DELETE FROM group_invitations WHERE group_name = ? AND invitee = ?");
+    query.addBindValue(groupName);
     query.addBindValue(username);
-    query.addBindValue(status);
+
     if (!query.exec()) {
-        qDebug() << "Failed to create group member:" << query.lastError();
+        Logger::error("Failed to accept invitation: " + query.lastError().text());
         return false;
     }
-    return true;
+
+    // Add member to group without status
+    return addMember(groupName, username);
 }
 
-bool GroupRepository::inviteGroupMember(const QString& groupId, const QString& username) {
-    return createGroupMember(groupId, username, "pending");
-}
-
-bool GroupRepository::acceptGroupInvitation(const QString& groupId, const QString& username) {
+// Reject a group invitation
+bool GroupRepository::rejectGroupInvitation(const QString& groupName, const QString& username) {
     QSqlQuery query(db->database());
-    query.prepare("UPDATE group_members SET status = 'accepted' WHERE group_id = ? AND member = ?");
-    query.addBindValue(groupId);
+    query.prepare("DELETE FROM group_invitations WHERE group_name = ? AND invitee = ?");
+    query.addBindValue(groupName);
     query.addBindValue(username);
+
     if (!query.exec()) {
-        qDebug() << "Failed to accept group invitation:" << query.lastError();
+        Logger::error("Failed to reject invitation: " + query.lastError().text());
         return false;
     }
+
+    // Optionally, you can log or handle the rejection if needed
     return true;
 }
 
-bool GroupRepository::rejectGroupInvitation(const QString& groupId, const QString& username) {
+// Get the creator of the group
+QString GroupRepository::getGroupCreator(const QString& groupName) {
     QSqlQuery query(db->database());
-    query.prepare("UPDATE group_members SET status = 'rejected' WHERE group_id = ? AND member = ?");
-    query.addBindValue(groupId);
-    query.addBindValue(username);
-    if (!query.exec()) {
-        qDebug() << "Failed to reject group invitation:" << query.lastError();
-        return false;
+    query.prepare("SELECT creator FROM groups WHERE group_name = ?");
+    query.addBindValue(groupName);
+
+    if (query.exec() && query.next()) {
+        return query.value(0).toString();
     }
-    return true;
+
+    return "";
 }
 
-bool GroupRepository::leaveGroupChat(const QString& groupId, const QString& username) {
+// Get members of the group by group name
+QList<QPair<QString, QString>> GroupRepository::getGroupMembersByName(const QString& groupName) {
+    QList<QPair<QString, QString>> members;
     QSqlQuery query(db->database());
-    query.prepare("DELETE FROM group_members WHERE group_id = ? AND member = ?");
-    query.addBindValue(groupId);
-    query.addBindValue(username);
-    if (!query.exec()) {
-        qDebug() << "Failed to leave group chat:" << query.lastError();
-        return false;
-    }
-    return true;
-}
+    query.prepare("SELECT member FROM group_members WHERE group_name = ?");
+    query.addBindValue(groupName);
 
-QPair<QString, QString> GroupRepository::getGroupById(const QString& groupId) {
-    QSqlQuery query(db->database());
-    query.prepare("SELECT group_name, creator FROM groups WHERE id = ?");
-    query.addBindValue(groupId);
-
-    if (!query.exec()) {
-        qDebug() << "Failed to get group by ID:" << query.lastError();
-        return QPair<QString, QString>();
+    if (query.exec()) {
+        while (query.next()) {
+            QString member = query.value(0).toString();
+            members.append(qMakePair(member, QString())); // Status removed
+        }
+    } else {
+        Logger::error("Error retrieving group members: " + query.lastError().text());
     }
 
-    if (query.next()) {
-        return QPair<QString, QString>(
-            query.value(0).toString(),  // group_name
-            query.value(1).toString()   // creator
-        );
-    }
-
-    return QPair<QString, QString>();  // Return empty pair if not found
-}
-
-
-QVector<QPair<QString, QString>> GroupRepository::getGroupMembers(const QString& groupId) {
-    QVector<QPair<QString, QString>> members;
-    QSqlQuery query(db->database());
-
-    query.prepare("SELECT member, status FROM group_members WHERE group_id = ?");
-    query.addBindValue(groupId);
-    if (!query.exec()) {
-        qDebug() << "Failed to fetch group members:" << query.lastError();
-        return members;
-    }
-
-    while (query.next()) {
-        members.append(QPair<QString, QString>(
-            query.value(0).toString(),  // username
-            query.value(1).toString()   // status
-        ));
-    }
     return members;
 }
 
-QVector<QPair<QString, QString>> GroupRepository::getSentGroupInvitations(const QString& username) {
-    QVector<QPair<QString, QString>> invitations;
+// Get groups a user belongs to
+QList<QPair<QString, QString>> GroupRepository::getUserGroups(const QString& username) {
+    QList<QPair<QString, QString>> groups;
     QSqlQuery query(db->database());
-
-    query.prepare("SELECT g.id, g.group_name FROM groups g "
-                 "INNER JOIN group_members gm ON g.id = gm.group_id "
-                 "WHERE gm.member = ? AND gm.status = 'pending'");
-    query.addBindValue(username);
-    if (!query.exec()) {
-        qDebug() << "Failed to fetch sent invitations:" << query.lastError();
-        return invitations;
-    }
-
-    while (query.next()) {
-        invitations.append(QPair<QString, QString>(
-            query.value(0).toString(),  // group id
-            query.value(1).toString()   // group name
-        ));
-    }
-    return invitations;
-}
-
-QVector<QPair<QString, QString>> GroupRepository::getReceivedGroupInvitations(const QString& username) {
-    QVector<QPair<QString, QString>> invitations;
-    QSqlQuery query(db->database());
-
-    query.prepare("SELECT g.id, g.group_name FROM groups g "
-                 "INNER JOIN group_members gm ON g.id = gm.group_id "
-                 "WHERE gm.member = ? AND gm.status = 'pending'");
-    query.addBindValue(username);
-    if (!query.exec()) {
-        qDebug() << "Failed to fetch received invitations:" << query.lastError();
-        return invitations;
-    }
-
-    while (query.next()) {
-        invitations.append(QPair<QString, QString>(
-            query.value(0).toString(),  // group id
-            query.value(1).toString()   // group name
-        ));
-    }
-    return invitations;
-}
-
-QVector<QPair< QString, QPair<QString, QString>>> GroupRepository::getGroupMessages(const QString& groupId) {
-    QVector<QPair< QString, QPair<QString, QString>>> messages;
-    QSqlQuery query(db->database());
-
-    query.prepare("SELECT sender, content, timestamp FROM group_messages "
-                 "WHERE group_id = ? ORDER BY timestamp DESC");
-    query.addBindValue(groupId);
-    if (!query.exec()) {
-        qDebug() << "Failed to fetch group messages:" << query.lastError();
-        return messages;
-    }
-
-    while (query.next()) {
-        messages.append(QPair<QString, QPair<QString, QString>>(
-            query.value(0).toString(),  // sender
-            QPair<QString, QString>(
-                query.value(1).toString(),  // content 
-                query.value(2).toString()   // timestamp
-            )
-        ));
-    }
-    return messages;
-}
-
-QVector<QPair<QString, QString>> GroupRepository::getUserGroups(const QString& username) {
-    QVector<QPair<QString, QString>> groups;
-    QSqlQuery query(db->database());
-
-    query.prepare("SELECT g.id, g.group_name FROM groups g "
-                 "INNER JOIN group_members gm ON g.id = gm.group_id "
-                 "WHERE gm.member = ? AND gm.status = 'accepted'");
+    query.prepare(R"(
+        SELECT g.group_name, g.creator
+        FROM groups g
+        JOIN group_members gm ON g.group_name = gm.group_name
+        WHERE gm.member = ?
+    )");
     query.addBindValue(username);
 
     if (!query.exec()) {
-        qDebug() << "Failed to fetch user groups:" << query.lastError();
+        Logger::error("Error fetching user groups: " + query.lastError().text());
         return groups;
     }
 
     while (query.next()) {
-        groups.append(QPair<QString, QString>(
-            query.value(0).toString(),  // group id
-            query.value(1).toString()   // group name
-        ));
+        QString groupName = query.value("group_name").toString();
+        QString creator = query.value("creator").toString();
+        groups.append(qMakePair(groupName, creator));
     }
+
     return groups;
+}
+
+// Helper method to add a member to a group without status
+bool GroupRepository::addMember(const QString& groupName, const QString& username) {
+    QSqlQuery query(db->database());
+    // Fixed SQL statement
+    query.prepare("INSERT INTO group_members (group_name, member, created_at) VALUES (?, ?, ?)");
+    query.addBindValue(groupName);
+    query.addBindValue(username);
+    query.addBindValue(QDateTime::currentDateTime().toString(Qt::ISODate));
+
+    if (!query.exec()) {
+        Logger::error("Failed to add member: " + query.lastError().text());
+        return false;
+    }
+
+    return true;
+}
+
+// Helper method to check if a user is a member of a group
+bool GroupRepository::isMember(const QString& groupName, const QString& username) {
+    QSqlQuery query(db->database());
+    query.prepare("SELECT COUNT(*) FROM group_members WHERE group_name = ? AND member = ?");
+    query.addBindValue(groupName);
+    query.addBindValue(username);
+
+    if (query.exec() && query.next()) {
+        return query.value(0).toInt() > 0;
+    }
+
+    return false;
 }

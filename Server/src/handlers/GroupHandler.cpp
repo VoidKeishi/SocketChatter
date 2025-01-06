@@ -17,23 +17,24 @@ GroupHandler::GroupHandler(DatabaseManager* db)
 }
 
 void GroupHandler::handleCreateGroup(const QJsonObject& request) {
-    QString groupName = request["groupName"].toString();
-    QString creator = request["sender"].toString();
-    QString groupDetails = request["groupDetails"].toString(); // Extract groupDetails
+    QJsonObject payload = request["payload"].toObject();
+    QString groupName = payload["groupName"].toString();
+    QString creator = payload["sender"].toString();
 
-    if (groupRepo.createGroupChat(groupName, creator, groupDetails)) { // Pass groupDetails to repository
-        emit responseReady(ResponseFactory::createGroupCreateResponse(true, "Group created successfully", groupName, groupDetails));
+    if (groupRepo.createGroupChat(groupName, creator)) {
+        emit responseReady(ResponseFactory::createGroupCreateResponse(true, "Group created successfully", groupName));
     } else {
         Logger::error("Failed to create group: " + groupName);
-        emit responseReady(ResponseFactory::createGroupCreateResponse(false, "Failed to create group", groupName, groupDetails));
+        emit responseReady(ResponseFactory::createGroupCreateResponse(false, "Failed to create group", groupName));
     }
 }
 
 void GroupHandler::handleFetchGroup(const QJsonObject& request) {
-    QString sender = request["sender"].toString();
+    QJsonObject payload = request["payload"].toObject();
+    QString sender = payload["sender"].toString();
 
     auto groups = groupRepo.getUserGroups(sender);
-    QList<QPair<QString, QString>> groupList; // List of pairs (groupId, groupName)
+    QList<QPair<QString, QString>> groupList; // List of pairs (groupName, creator)
     for (const auto& group : groups) {
         groupList.append(group);
     }
@@ -42,8 +43,9 @@ void GroupHandler::handleFetchGroup(const QJsonObject& request) {
 }
 
 void GroupHandler::handleDeleteGroup(const QJsonObject& request) {
-    QString sender = request["sender"].toString();
-    QString groupName = request["groupName"].toString();
+    QJsonObject payload = request["payload"].toObject();
+    QString sender = payload["sender"].toString();
+    QString groupName = payload["groupName"].toString();
 
     if (groupRepo.deleteGroupChat(groupName, sender)) {
         emit responseReady(ResponseFactory::createGroupDeleteResponse(true, "Group deleted successfully", groupName));
@@ -52,7 +54,7 @@ void GroupHandler::handleDeleteGroup(const QJsonObject& request) {
         auto members = groupRepo.getGroupMembersByName(groupName);
         QJsonArray memberArray;
         for (const auto& member : members) {
-            memberArray.append(member.second);
+            memberArray.append(member.first); // Assuming member.first is the username
         }
         emit responseReady(ResponseFactory::createGroupDeletedNotification("Group deleted successfully", groupName, memberArray));
     } else {
@@ -62,15 +64,16 @@ void GroupHandler::handleDeleteGroup(const QJsonObject& request) {
 }
 
 void GroupHandler::handleGroupInvite(const QJsonObject& request) {
-    QString sender = request["sender"].toString();
-    QString groupName = request["groupName"].toString();
-    QString invitee = request["invitee"].toString();
+    QJsonObject payload = request["payload"].toObject();
+    QString sender = payload["sender"].toString();
+    QString groupName = payload["groupName"].toString();
+    QString invitee = payload["invitee"].toString();
 
     if (groupRepo.inviteMember(groupName, sender, invitee)) {
         emit responseReady(ResponseFactory::createGroupInviteResponse(true, "Invitation sent successfully", groupName, invitee));
 
         // Notify invitee
-        emit responseReady(NotificationFactory::createGroupInviteNotification(groupName, sender, invitee));
+        ConnectionManager::instance()->sendMessageToClient(invitee, NotificationFactory::createGroupInviteNotification(groupName, sender, invitee));
     } else {
         Logger::error("Failed to send group invitation from " + sender + " to " + invitee + " for group " + groupName);
         emit responseReady(ResponseFactory::createGroupInviteResponse(false, "Failed to send group invitation", groupName, invitee));
@@ -78,31 +81,32 @@ void GroupHandler::handleGroupInvite(const QJsonObject& request) {
 }
 
 void GroupHandler::handleGroupInviteResponse(const QJsonObject& request) {
-    QString sender = request["sender"].toString();
-    QString groupName = request["groupName"].toString();
-    bool accept = request["accept"].toBool();
+    QJsonObject payload = request["payload"].toObject();
+    QString responder = payload["sender"].toString();
+    QString groupName = payload["groupName"].toString();
+    bool accept = payload["accept"].toBool();
 
     if (accept) {
-        if (groupRepo.acceptGroupInvitation(groupName, sender)) {
-            emit responseReady(ResponseFactory::createGroupInviteResponseAck(true, true, "Invitation accepted", groupName, sender));
+        if (groupRepo.acceptGroupInvitation(groupName, responder)) {
+            emit responseReady(ResponseFactory::createGroupInviteResponseAck(true, true, "Invitation accepted", groupName, responder));
 
             // Notify group creator
             QString creator = groupRepo.getGroupCreator(groupName);
-            emit responseReady(NotificationFactory::createGroupInviteResponseNotification(groupName, sender, true, creator));
+            emit responseReady(NotificationFactory::createGroupInviteResponseNotification(groupName, responder, true, creator));
         } else {
-            Logger::error("Failed to accept invitation for group: " + groupName + " by " + sender);
-            emit responseReady(ResponseFactory::createGroupInviteResponseAck(false, true, "Failed to accept invitation", groupName, sender));
+            Logger::error("Failed to accept invitation for group: " + groupName + " by " + responder);
+            emit responseReady(ResponseFactory::createGroupInviteResponseAck(false, true, "Failed to accept invitation", groupName, responder));
         }
     } else {
-        if (groupRepo.rejectGroupInvitation(groupName, sender)) {
-            emit responseReady(ResponseFactory::createGroupInviteResponseAck(true, false, "Invitation rejected", groupName, sender));
+        if (groupRepo.rejectGroupInvitation(groupName, responder)) {
+            emit responseReady(ResponseFactory::createGroupInviteResponseAck(true, false, "Invitation rejected", groupName, responder));
 
             // Notify group creator
             QString creator = groupRepo.getGroupCreator(groupName);
-            emit responseReady(NotificationFactory::createGroupInviteResponseNotification(groupName, sender, false, creator));
+            emit responseReady(NotificationFactory::createGroupInviteResponseNotification(groupName, responder, false, creator));
         } else {
-            Logger::error("Failed to reject invitation for group: " + groupName + " by " + sender);
-            emit responseReady(ResponseFactory::createGroupInviteResponseAck(false, false, "Failed to reject invitation", groupName, sender));
+            Logger::error("Failed to reject invitation for group: " + groupName + " by " + responder);
+            emit responseReady(ResponseFactory::createGroupInviteResponseAck(false, false, "Failed to reject invitation", groupName, responder));
         }
     }
 }

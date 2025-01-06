@@ -69,44 +69,40 @@ namespace NotificationFactory
         };
     }
 
-    inline QJsonObject createGroupInviteNotification(const QString& groupId, const QString& inviter, const QString& invitee)
-    {
-        return QJsonObject{
+    inline QJsonObject createGroupInviteNotification(const QString& groupName, const QString& inviter, const QString& invitee) {
+        return QJsonObject {
             {"type", "GROUP_INVITE_NOTIFICATION"},
             {"timestamp", QDateTime::currentSecsSinceEpoch()},
             {"payload", QJsonObject{
-                {"groupId", groupId},
+                {"groupName", groupName},
                 {"inviter", inviter},
                 {"invitee", invitee}
             }}
         };
     }
 
-    inline QJsonObject createGroupInviteResponseNotification(const QString& groupId, const QString& groupName, const QString& responder, bool accepted)
-    {
-        return QJsonObject{
+    inline QJsonObject createGroupInviteResponseNotification(const QString& groupName, const QString& responder, bool accepted, const QString& creator) {
+        return QJsonObject {
             {"type", "GROUP_INVITE_RESPONSE_NOTIFICATION"},
             {"timestamp", QDateTime::currentSecsSinceEpoch()},
             {"payload", QJsonObject{
-                {"groupId", groupId},
                 {"groupName", groupName},
                 {"responder", responder},
-                {"accepted", accepted}
+                {"accepted", accepted},
+                {"creator", creator}
             }}
         };
     }
 
-    inline QJsonObject createGroupMemberLeftNotification(const QString& groupId, const QString& groupName, const QString& username)
-    {
-        return QJsonObject{
-            {"type", "GROUP_MEMBER_LEFT_NOTIFICATION"},
+    inline QJsonObject createGroupDeletedNotification(const QString& message, const QString& groupName, const QJsonArray& members) {
+        return QJsonObject {
+            {"type", "GROUP_DELETED_NOTIFICATION"},
             {"timestamp", QDateTime::currentSecsSinceEpoch()},
             {"payload", QJsonObject{
-                {"groupId", groupId},
+                {"message", message},
                 {"groupName", groupName},
-                {"username", username}
+                {"members", members}
             }}
         };
     }
-    
 }

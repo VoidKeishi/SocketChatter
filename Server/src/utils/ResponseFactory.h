@@ -157,15 +157,14 @@ namespace ResponseFactory
                 {"messages", QJsonDocument::fromJson(messagesString.toUtf8()).array()}}}};
     }
 
-    inline QJsonObject createGroupCreateResponse(bool success, const QString& message, const QString& groupName, const QString& groupDetails) {
+    inline QJsonObject createGroupCreateResponse(bool success, const QString& message, const QString& groupName) {
         return QJsonObject {
             {"type", "GROUP_CREATE_RESPONSE"},
             {"timestamp", QDateTime::currentSecsSinceEpoch()},
             {"payload", QJsonObject{
                 {"success", success},
                 {"message", message},
-                {"groupName", groupName},
-                {"groupDetails", groupDetails}
+                {"groupName", groupName}
             }}
         };
     }
@@ -174,8 +173,8 @@ namespace ResponseFactory
         QJsonArray groupArray;
         for (const auto& group : groups) {
             QJsonObject groupObj;
-            groupObj["groupId"] = group.first;
-            groupObj["groupName"] = group.second;
+            groupObj["groupName"] = group.first;
+            groupObj["creator"] = group.second;
             groupArray.append(groupObj);
         }
 

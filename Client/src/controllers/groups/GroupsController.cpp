@@ -16,6 +16,7 @@ GroupsController::GroupsController(GroupViewModel* viewModel, QObject* parent)
         { "GROUP_FETCH_RESPONSE",  [this](const QJsonObject& payload) { m_responseHandler->handleFetchGroupsResponse(payload); }},
 
         // Notifications
+        { "GROUP_INVITE_NOTIFICATION", [this](const QJsonObject& payload) { m_notificationHandler->handleGroupInvitationReceivedNotification(payload); }},
         { "GROUP_UPDATED_NOTIFICATION", [this](const QJsonObject& payload) { m_notificationHandler->handleGroupUpdatedNotification(payload); }},
         { "GROUP_MEMBER_ADDED_NOTIFICATION", [this](const QJsonObject& payload) { m_notificationHandler->handleGroupMemberAddedNotification(payload); }},
     };
@@ -45,6 +46,12 @@ void GroupsController::handleGroupAction(GroupAction action, const QString& send
         break;
     case GroupAction::FetchGroups:
         m_requestSender->requestFetchGroups(sender);
+        break;
+    case GroupAction::InviteGroupMember:
+        m_requestSender->requestInviteToGroup(sender, receiver, content);
+        break;
+    case GroupAction::DeleteGroup:
+        m_requestSender->requestDeleteGroup(sender, receiver);
         break;
     default:
         Logger::error("Invalid group action");

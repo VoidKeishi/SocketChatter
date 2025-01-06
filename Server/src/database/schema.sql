@@ -38,30 +38,31 @@ CREATE TABLE IF NOT EXISTS messages (
 );
 
 CREATE TABLE IF NOT EXISTS groups (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    group_name TEXT UNIQUE NOT NULL,
+    group_name TEXT PRIMARY KEY,
     creator TEXT NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    timestamp BIGINT NOT NULL,
     FOREIGN KEY(creator) REFERENCES users(username)
 );
 
+-- Remove the 'status' column from group_members
+DROP TABLE IF EXISTS group_members;
+
 CREATE TABLE IF NOT EXISTS group_members (
-    group_id INTEGER NOT NULL,
+    group_name TEXT NOT NULL,
     member TEXT NOT NULL,
-    status TEXT CHECK(status IN ('pending', 'accepted', 'rejected')) NOT NULL DEFAULT 'pending',
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY(group_id) REFERENCES groups(id),
+    created_at TEXT NOT NULL,
+    FOREIGN KEY(group_name) REFERENCES groups(group_name) ON DELETE CASCADE,
     FOREIGN KEY(member) REFERENCES users(username),
-    PRIMARY KEY(group_id, member)
+    PRIMARY KEY(group_name, member)
 );
 
-CREATE TABLE IF NOT EXISTS group_messages (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    group_id INTEGER NOT NULL,
-    sender TEXT NOT NULL,
-    content TEXT NOT NULL,
+CREATE TABLE IF NOT EXISTS group_invitations (
+    group_name TEXT NOT NULL,
+    inviter TEXT NOT NULL,
+    invitee TEXT NOT NULL,
     timestamp BIGINT NOT NULL,
-    FOREIGN KEY(group_id) REFERENCES groups(id),
-    FOREIGN KEY(sender) REFERENCES users(username)
+    FOREIGN KEY(group_name) REFERENCES groups(group_name) ON DELETE CASCADE,
+    FOREIGN KEY(inviter) REFERENCES users(username),
+    FOREIGN KEY(invitee) REFERENCES users(username),
+    PRIMARY KEY(group_name, invitee)
 );

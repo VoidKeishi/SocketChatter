@@ -49,3 +49,13 @@ void MessagesController::handleMessageAction(MessageAction action, const QString
         break;
     }
 }
+
+void MessagesController::sendMessage(const QString& sender, const QString& receiver, const QString& content) {
+    QByteArray requestData = RequestFactory::createSendMessageRequest(sender, receiver, content);
+    emit sendRequest(requestData);
+}
+
+void MessagesController::fetchMessages(const QString& sender, const QString& receiver) {
+    QByteArray requestData = RequestFactory::createFetchMessagesRequest(sender, receiver);
+    emit sendRequest(requestData);
+}

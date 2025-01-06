@@ -5,9 +5,9 @@
 #include <functional>
 #include <QJsonArray>
 
-#include "MessagesRequestSender.h"
-#include "MessagesResponseHandler.h"
-#include "MessagesNotificationHandler.h"
+#include "GroupsRequestSender.h"
+#include "GroupsResponseHandler.h"
+#include "GroupsNotificationHandler.h"
 #include "../IController.h"
 #include "../../viewmodels/ConversationViewModel.h"
 #include "../session/UserManager.h"
@@ -15,15 +15,18 @@
 #include "../utils/Logger.h"
 #include "../network/NetworkController.h"
 
-class MessagesController : public QObject, public IController {
+class GroupsController : public QObject, public IController {
     Q_OBJECT
 public:
-    explicit MessagesController(ConversationViewModel* viewModel, QObject* parent = nullptr);
+    explicit GroupsController(ConversationViewModel* viewModel, QObject* parent = nullptr);
     // IController interface
     bool canHandle(const QString& type) const override;
     void handle(const QString& type, const QJsonObject& payload) override;
 
 public slots:
+    void sendMessage(const QString& sender, const QString& receiver, const QString& content);
+    void fetchGroups(const QString& sender, const QString& receiver);
+
     void handleMessageAction(MessageAction action, const QString& sender, const QString& receiver, const QString& content);
 
 signals:
@@ -31,8 +34,8 @@ signals:
 
 private:
     ConversationViewModel* m_viewModel;
-    MessagesRequestSender* m_requestSender;
-    MessagesResponseHandler* m_responseHandler;
-    MessagesNotificationHandler* m_notificationHandler;
+    GroupsRequestSender* m_requestSender;
+    GroupsResponseHandler* m_responseHandler;
+    GroupsNotificationHandler* m_notificationHandler;
     QMap<QString, std::function<void(const QJsonObject&)>> handlers;
 };

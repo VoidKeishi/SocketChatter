@@ -1,61 +1,61 @@
-#include <QJsonArray>
-
 #include "MessagesController.h"
-#include "../utils/RequestFactory.h"
-#include "../utils/Logger.h"
+#include "MessagesRequestSender.h"
+#include "MessagesResponseHandler.h"
+#include "MessagesNotificationHandler.h"
 
 MessagesController::MessagesController(ConversationViewModel* viewModel, QObject* parent)
-    : QObject(parent), m_viewModel(viewModel) {
+    : QObject(parent) 
+    , m_viewModel(viewModel) 
+    , m_requestSender(new MessagesRequestSender(this))
+    , m_responseHandler(new MessagesResponseHandler(viewModel, this))
+    , m_notificationHandler(new MessagesNotificationHandler(viewModel, this))
+{
     handlers = {
-        {"SEND_MESSAGE_RESPONSE", [this](const QJsonObject& p) { handleSendMessageResponse(p); }},
-        {"FETCH_MESSAGES_RESPONSE", [this](const QJsonObject& p) { handleFetchMessagesResponse(p); }}
+        // Responses
+        {"SEND_MESSAGE_RESPONSE", [this](const QJsonObject& p) { m_responseHandler->handleSendMessageResponse(p); }},
+        {"FETCH_MESSAGES_RESPONSE", [this](const QJsonObject& p) { m_responseHandler->handleFetchMessagesResponse(p); }},
+        // Notifications
+        {"MESSAGE_NOTIFICATION", [this](const QJsonObject& p) { m_notificationHandler->handleMessageNotification(p); }},
     };
 
-    connect(m_viewModel, &ConversationViewModel::sendMessageRequested, this, &MessagesController::sendMessage);
-    connect(m_viewModel, &ConversationViewModel::fetchMessagesRequested, this, &MessagesController::fetchMessages);
+    connect(m_viewModel, &ConversationViewModel::messageActionRequested, 
+            this, &MessagesController::handleMessageAction);
+    connect(this, &MessagesController::sendRequest, 
+            NetworkController::instance(), &NetworkController::sendData);
 }
 
 bool MessagesController::canHandle(const QString& type) const {
     return handlers.contains(type);
 }
 
+// Handle responses and notifications
 void MessagesController::handle(const QString& type, const QJsonObject& payload) {
     if (handlers.contains(type)) {
         handlers[type](payload);
     }
 }
-
-void MessagesController::sendMessage(const QString& contact, const QString& content) {
-    QByteArray requestData = RequestFactory::createSendMessageRequest(contact, content);
-    emit sendRequest(requestData);
-}
-
-void MessagesController::fetchMessages(const QString& contact) {
-    QByteArray requestData = RequestFactory::createFetchMessagesRequest(contact);
-    emit sendRequest(requestData);
-}
-
-void MessagesController::handleSendMessageResponse(const QJsonObject& response) {
-    bool success = response.value("success").toBool();
-    if (success) {
-        QString author = response.value("author").toString();
-        QString content = response.value("content").toString();
-        QDateTime timestamp = QDateTime::fromString(response.value("timestamp").toString(), Qt::ISODate);
-        m_viewModel->onMessageReceived(author, content, timestamp);
-    } else {
-        Logger::error("Failed to send message");
+// Handle UI actions
+void MessagesController::handleMessageAction(MessageAction action, const QString& sender, const QString& receiver, const QString& content) {
+    switch (action) {
+    case MessageAction::SendMessage:
+        Logger::debug("Sending message");
+        m_requestSender->requestSendMessage(sender, receiver, content);
+        break;
+    case MessageAction::FetchMessages:
+        m_requestSender->requestFetchMessages(sender, receiver);
+        break;
+    default:
+        Logger::error("Invalid message action");
+        break;
     }
 }
 
-void MessagesController::handleFetchMessagesResponse(const QJsonObject& response) {
-    QJsonArray messagesArray = response.value("messages").toArray();
-    QVector<Message> messages;
-    for (const QJsonValue& value : messagesArray) {
-        QJsonObject obj = value.toObject();
-        QString author = obj.value("author").toString();
-        QString content = obj.value("content").toString();
-        QDateTime timestamp = QDateTime::fromString(obj.value("timestamp").toString(), Qt::ISODate);
-        messages.append({author, content, timestamp, author == m_viewModel->currentContact()});
-    }
-    m_viewModel->onMessagesFetched(messages);
+void MessagesController::sendMessage(const QString& sender, const QString& receiver, const QString& content) {
+    QByteArray requestData = RequestFactory::createSendMessageRequest(sender, receiver, content);
+    emit sendRequest(requestData);
+}
+
+void MessagesController::fetchMessages(const QString& sender, const QString& receiver) {
+    QByteArray requestData = RequestFactory::createFetchMessagesRequest(sender, receiver);
+    emit sendRequest(requestData);
 }

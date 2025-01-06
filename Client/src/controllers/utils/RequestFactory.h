@@ -107,24 +107,26 @@ namespace RequestFactory
     }
 
     // Messages requests
-    inline QByteArray createSendMessageRequest(const QString &contact, const QString &content)
+    inline QByteArray createSendMessageRequest(const QString &sender, const QString &receiver, const QString &content)
     {
         QJsonObject request = {
-            {"type", "SEND_MESSAGE"},
+            {"type", "SEND_MESSAGE_REQUEST"},
             {"timestamp", QDateTime::currentSecsSinceEpoch()},
             {"payload", QJsonObject{
-                            {"contact", contact},
-                            {"content", content}}}};
+                {"sender", sender},
+                {"receiver", receiver},
+                {"content", content}}}};
         return QJsonDocument(request).toJson(QJsonDocument::Compact) + '\n';
     }
 
-    inline QByteArray createFetchMessagesRequest(const QString &contact)
+    inline QByteArray createFetchMessagesRequest(const QString &sender, const QString &receiver)
     {
         QJsonObject request = {
-            {"type", "FETCH_MESSAGES"},
+            {"type", "FETCH_MESSAGES_REQUEST"},
             {"timestamp", QDateTime::currentSecsSinceEpoch()},
             {"payload", QJsonObject{
-                            {"contact", contact}}}};
+                {"sender", sender}, 
+                {"receiver", receiver}}}};
         return QJsonDocument(request).toJson(QJsonDocument::Compact) + '\n';
     }
 

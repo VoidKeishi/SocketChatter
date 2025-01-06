@@ -2,5 +2,4 @@ mkdir -p Client/build
 cd Client/build
 cmake ..
 make
-IP=$(hostname -I | awk '{print $1}')
-./Client $IP 3000S DEBUG
+./Client 192.168.103.242 3000 DEBUG

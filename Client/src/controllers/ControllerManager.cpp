@@ -1,5 +1,4 @@
 #include "ControllerManager.h"
-#include "network/NetworkController.h"
 
 ControllerManager* ControllerManager::m_instance = nullptr;
 
@@ -18,10 +17,6 @@ ControllerManager::ControllerManager(QObject *parent) : QObject(parent) {
         responseDispatcher->registerController(authController);
         responseDispatcher->registerController(contactsController);
         responseDispatcher->registerController(messagesController);
-
-        // Get the singleton instance of NetworkController
-        networkController = NetworkController::instance();
-        networkController->connectToServer("localhost", 3000);
 }
 
 ControllerManager* ControllerManager::instance() {

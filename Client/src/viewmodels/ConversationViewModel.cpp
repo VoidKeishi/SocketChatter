@@ -1,30 +1,60 @@
 #include "ConversationViewModel.h"
+#include "../controllers/utils/Logger.h"
 
 ConversationViewModel::ConversationViewModel(QObject* parent)
-    : QObject(parent) {}
+    : QAbstractListModel(parent) {}
 
-void ConversationViewModel::setCurrentContact(const QString& contact) {
-    if (m_currentContact != contact) {
-        m_currentContact = contact;
-        emit currentContactChanged();
+void ConversationViewModel::setCurrentReceiver(const QString& receiver) {
+    if (m_currentReceiver != receiver) {
+        m_currentReceiver = receiver;
+        emit currentReceiverChanged();
         fetchMessages();
     }
 }
 
-void ConversationViewModel::sendMessage(const QString& content) {
-    emit sendMessageRequested(m_currentContact, content);
+void ConversationViewModel::sendMessage(const QString& sender, const QString& receiver, const QString& content) {
+    emit messageActionRequested(MessageAction::SendMessage, sender, receiver, content);
 }
 
 void ConversationViewModel::fetchMessages() {
-    emit fetchMessagesRequested(m_currentContact);
+    emit messageActionRequested(MessageAction::FetchMessages, 
+                              UserManager::instance()->currentUser(), 
+                              m_currentReceiver);
 }
 
-void ConversationViewModel::onMessageReceived(const QString& author, const QString& content, const QDateTime& timestamp) {
-    m_messages.append({author, content, timestamp, author == m_currentContact});
-    emit messagesChanged();
+void ConversationViewModel::onMessageAckReceived(
+    const QString& sender,
+    const QString& receiver,
+    const QString& content,
+    const QDateTime& timestamp,
+    const QString& id) 
+{
+    beginInsertRows(QModelIndex(), m_messages.size(), m_messages.size());
+    m_messages.append({
+        id.isEmpty() ? QString::number(QDateTime::currentMSecsSinceEpoch()) : id,
+        sender,
+        receiver,
+        content,
+        timestamp
+    });
+    endInsertRows();
 }
 
 void ConversationViewModel::onMessagesFetched(const QVector<Message>& messages) {
+    beginResetModel();
     m_messages = messages;
-    emit messagesChanged();
+    endResetModel();
+}
+
+// Updater for controller to call
+void ConversationViewModel::addMessage(const QString &from, const QString &content) {
+    beginInsertRows(QModelIndex(), m_messages.size(), m_messages.size());
+    m_messages.append({
+        QString::number(QDateTime::currentMSecsSinceEpoch()),
+        from,
+        UserManager::instance()->currentUser(),
+        content,
+        QDateTime::currentDateTime()
+    });
+    endInsertRows();
 }

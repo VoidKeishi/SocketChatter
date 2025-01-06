@@ -157,4 +157,57 @@ namespace ResponseFactory
                 {"messages", QJsonDocument::fromJson(messagesString.toUtf8()).array()}}}};
     }
 
+    // Add to ResponseFactory namespace:
+    inline QJsonObject createGroupResponse(bool success, const QString& message, const QString& groupName) {
+        return QJsonObject {
+            {"type", "GROUP_CREATE_RESPONSE"},
+            {"timestamp", QDateTime::currentSecsSinceEpoch()},
+            {"payload", QJsonObject{
+                {"success", success},
+                {"message", message},
+                {"groupName", groupName}
+            }}
+        };
+    }
+
+    inline QJsonObject groupInviteResponse(bool success, const QString& message, const QString& sender, const QString& receiver) {
+        return QJsonObject {
+            {"type", "GROUP_INVITE_RESPONSE"},
+            {"timestamp", QDateTime::currentSecsSinceEpoch()},
+            {"payload", QJsonObject{
+                {"success", success},
+                {"sender", sender},
+                {"receiver", receiver},
+                {"message", message}
+            }}
+        };
+    }
+
+    inline QJsonObject groupInviteResponseAck(bool success, bool accept, const QString& message, const QString& groupname, const QString& member) {
+        return QJsonObject {
+            {"type", "GROUP_INVITE_RESPONSE_ACK"},
+            {"timestamp", QDateTime::currentSecsSinceEpoch()},
+            {"payload", QJsonObject{
+                {"success", success},
+                {"accept", accept},
+                {"groupname", groupname},
+                {"member", member},
+                {"message", message}
+            }}
+        };
+    }
+
+    inline QJsonObject groupLeaveResponse(bool success, const QString& message, const QString& groupname, const QString& member) {
+        return QJsonObject {
+            {"type", "GROUP_LEAVE_RESPONSE"},
+            {"timestamp", QDateTime::currentSecsSinceEpoch()},
+            {"payload", QJsonObject{
+                {"success", success},
+                {"message", message},
+                {"groupname", groupname},
+                {"member", member}
+            }}
+        };
+    }
+
 }

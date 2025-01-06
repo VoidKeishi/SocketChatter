@@ -12,11 +12,13 @@ ClientHandler::ClientHandler(QTcpSocket* socket, QObject* parent)
     , authHandler(new AuthHandler(DatabaseManager::instance())) 
     , contactHandler(new ContactHandler(DatabaseManager::instance())) 
     , messageHandler(new MessageHandler(DatabaseManager::instance()))
+    , groupHandler(new GroupHandler(DatabaseManager::instance()))
 
 {
     dispatcher->registerHandler(authHandler);
     dispatcher->registerHandler(contactHandler);
     dispatcher->registerHandler(messageHandler);
+    dispatcher->registerHandler(groupHandler);
     
         
     connect(clientSocket, &QTcpSocket::readyRead, 

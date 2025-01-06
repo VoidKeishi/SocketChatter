@@ -16,17 +16,23 @@ bool MessageRepository::storeMessage(const QString& sender, const QString& recei
     
     Logger::debug(QString("SQL Query: %1").arg(sql));
     query.prepare(sql);
-
+    
     query.addBindValue(sender);
     query.addBindValue(receiver);
     query.addBindValue(content);
     query.addBindValue(timestamp);
 
-    QStringList boundValues;
-    for (const auto& val : query.boundValues()) {
-        boundValues << val.toString();
-    }
-    Logger::debug(QString("Bound values: %1").arg(boundValues.join(", ")));
+    query.exec("SELECT * FROM messages");
+    // QString debugQuery = "INSERT INTO messages (sender, receiver, content, timestamp) "
+    //                     "VALUES ('%1', '%2', '%3', %4)";
+    // debugQuery = debugQuery.arg(sender)
+    //                       .arg(receiver)
+    //                       .arg(content)
+    //                       .arg(timestamp);
+    
+    // Logger::debug(QString("Actual query to be executed: %1").arg(debugQuery));
+
+    
     
     if (!query.exec()) {
         Logger::error(QString("Database error: %1").arg(query.lastError().text()));

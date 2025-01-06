@@ -5,6 +5,7 @@
 #include <QQmlEngine> 
 #include "controllers/ControllerManager.h"
 #include "controllers/utils/Logger.h"
+#include "controllers/network/NetworkController.h"
 #include "viewmodels/ConversationViewModel.h"
 
 int main(int argc, char *argv[]) {
@@ -13,14 +14,27 @@ int main(int argc, char *argv[]) {
     
     QGuiApplication app(argc, argv);
 
-    // Configure log level based on command-line arguments
+    // Validate command line arguments
+    if (argc < 3) {
+        qDebug() << "Usage: ./Client <ip_address> <port> [log_level]";
+        qDebug() << "Example: ./Client 192.168.1.100 3000 DEBUG";
+        return -1;
+    }
+
+    // Extract server connection details
+    QString serverIP = QString::fromUtf8(argv[1]);
+    int serverPort = QString::fromUtf8(argv[2]).toInt();
+
+    // Configure logging
     if (argc >= 4) {
         QString logLevelStr = QString::fromUtf8(argv[3]).toUpper();
         Logger::setLogLevel(logLevelStr);
-    }
-    else {
+    } else {
         Logger::setLogLevel(LogLevel::DEBUG);
     }
+
+    // Connect to server using provided IP and port
+    NetworkController::instance()->connectToServer(serverIP, serverPort);
 
     // Set Material style
     QQuickStyle::setStyle("Material");

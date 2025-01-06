@@ -21,6 +21,12 @@ struct Message {
     }
 };
 
+enum class MessageAction {
+    SendMessage,
+    FetchMessages
+};
+
+
 class QmlMessage : public QObject {
     Q_OBJECT
     Q_PROPERTY(QString sender READ sender CONSTANT)
@@ -97,15 +103,18 @@ public:
     Q_INVOKABLE QString getCurrentUser() {
         return UserManager::instance()->m_currentUser;
     }
+    // Updater 
+    Q_INVOKABLE void addMessage(const QString& username, const QString& content);
 
 signals:
     void currentReceiverChanged();
     void sendMessageRequested(const QString& sender, const QString& receiver, const QString& content);
     void fetchMessagesRequested(const QString& sender, const QString& receiver);
-
+    void messageActionRequested(MessageAction action, const QString& sender, 
+                              const QString& receiver, const QString& content = "");
 public slots:
     void setCurrentReceiver(const QString& receiver);
-    void onMessageReceived(
+    void onMessageAckReceived(
         const QString& sender, 
         const QString& receiver,
         const QString& content, 

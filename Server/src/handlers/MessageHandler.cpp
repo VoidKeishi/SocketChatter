@@ -1,6 +1,8 @@
 #include "MessageHandler.h"
+#include "../core/ConnectionManager.h"
 #include "../utils/Logger.h"
 #include "../utils/ResponseFactory.h"
+#include "../utils/NotificationFactory.h"
 
 MessageHandler::MessageHandler(DatabaseManager* db) 
     : BaseHandler(nullptr), messageRepo(db) {
@@ -12,8 +14,8 @@ MessageHandler::MessageHandler(DatabaseManager* db)
 
 void MessageHandler::handleSendMessage(const QJsonObject& request) {
     QJsonObject payload = request["payload"].toObject();
-    QString sender = payload["sender"].toString();  // Changed from request to payload
-    QString receiver = payload["receiver"].toString(); // Changed from targetContact
+    QString sender = payload["sender"].toString(); 
+    QString receiver = payload["receiver"].toString();
     QString content = payload["content"].toString();
     qint64 timestamp = request["timestamp"].toInteger();
 
@@ -22,30 +24,14 @@ void MessageHandler::handleSendMessage(const QJsonObject& request) {
     // store the message first
     if (messageRepo.storeMessage(sender, receiver, content, timestamp)) {
         Logger::info("Message stored in database");
-        
-        // if user is online
-        attemptDelivery(receiver, request);
-        
+        QJsonObject messageNotification = NotificationFactory::createMessageNotification(sender, receiver, content);
+        // Notify the friend that they have been deleted
+        ConnectionManager::instance()->sendMessageToClient(receiver, messageNotification );
         // ack sender
         emit responseReady(ResponseFactory::createSendMessageResponse(sender, receiver, content));
     } else {
         Logger::error("Failed to store message in database");
         emit responseReady(ResponseFactory::createSendMessageResponse(sender, receiver, "Failed to send message"));
-    }
-}
-
-void MessageHandler::attemptDelivery(const QString& to, const QJsonObject& message) {
-    if (activeClients.contains(to)) {
-        QTcpSocket* targetSocket = activeClients[to];
-        if (targetSocket->state() == QAbstractSocket::ConnectedState) {
-            QJsonDocument doc(message);
-            QByteArray data = doc.toJson() + '\n';
-            targetSocket->write(data);
-            targetSocket->flush();
-            Logger::info(QString("Message delivered to online user %1").arg(to));
-        }
-    } else {
-        Logger::info(QString("User %1 is offline, message queued").arg(to));
     }
 }
 
@@ -64,20 +50,4 @@ void MessageHandler::handleFetchMessages(const QJsonObject& request) {
     // send the fetched data to user
     QJsonObject response = ResponseFactory::createFetchMessagesResponse(sender, receiver, messagesString);
     emit responseReady(response);
-}
-
-void MessageHandler::registerClient(const QString& username, QTcpSocket* socket) {
-    activeClients[username] = socket;
-    Logger::info(QString("Registered client: %1").arg(username));
-    
-    // Fetch and deliver any pending messages
-    QJsonArray pendingMessages = messageRepo.getPendingMessages(username);
-    for (const QJsonValue& msg : pendingMessages) {
-        attemptDelivery(username, msg.toObject());
-    }
-}
-
-void MessageHandler::removeClient(const QString& username) {
-    activeClients.remove(username);
-    Logger::info(QString("Removed client: %1").arg(username));
 }

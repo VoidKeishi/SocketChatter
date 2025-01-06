@@ -55,4 +55,17 @@ namespace NotificationFactory
             }}
         };
     }
+
+    inline QJsonObject createMessageNotification(const QString &sender, const QString &receiver, const QString &content)
+    {
+        return QJsonObject{
+            {"type", "MESSAGE_NOTIFICATION"},
+            {"timestamp", QDateTime::currentSecsSinceEpoch()},
+            {"payload", QJsonObject{
+                {"from", sender},
+                {"to", receiver},
+                {"content", content}
+            }}
+        };
+    }
 }

@@ -9,14 +9,11 @@ class MessageHandler : public BaseHandler {
 
 public:
     explicit MessageHandler(DatabaseManager* db);
-    void registerClient(const QString& username, QTcpSocket* socket);
-    void removeClient(const QString& username);
 
 private:
     QMap<QString, QTcpSocket*> activeClients;
-    MessageRepository messageRepo;  // Add this
+    MessageRepository messageRepo;
 
     void handleSendMessage(const QJsonObject& request);
     void handleFetchMessages(const QJsonObject& request);
-    void attemptDelivery(const QString& to, const QJsonObject& message);
 };

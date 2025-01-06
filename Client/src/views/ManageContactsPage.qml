@@ -16,8 +16,6 @@ Page {
         contactViewModel.fetchReceivedRequests()
     }
 
-    // We'll assume "contactViewModel" is provided in QML context by the parent or main QML file
-
     ColumnLayout {
         anchors.fill: parent
         spacing: 0

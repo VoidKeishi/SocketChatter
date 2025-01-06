@@ -133,14 +133,12 @@ void ClientHandler::handleMessage(const QString& toUsername, const QJsonObject& 
 void ClientHandler::onLoginSuccess(const QString& username) {
     m_username = username;
     ConnectionManager::instance()->addClient(username, this);
-    messageHandler->registerClient(username, clientSocket);
     Logger::info(QString("User %1 connected").arg(username));
 }
 
 void ClientHandler::onDisconnected() {
     if (!m_username.isEmpty()) {
         ConnectionManager::instance()->removeClient(m_username);
-        messageHandler->removeClient(m_username);
         Logger::info(QString("User %1 disconnected").arg(m_username));
     }
     clientSocket->deleteLater();

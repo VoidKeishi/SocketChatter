@@ -18,6 +18,7 @@ ContactHandler::ContactHandler(DatabaseManager* db)
         {"CANCEL_FRIEND_REQUEST", [this](const QJsonObject& p) { handleCancelSentRequest(p); }},
         {"RESPOND_TO_FRIEND_REQUEST", [this](const QJsonObject& p) { handleResponseRequest(p); }},
         {"DELETE_FRIEND_REQUEST", [this](const QJsonObject& p) { handleDeleteFriend(p); }},
+        {"FETCH_ONLINE_STATUS", [this](const QJsonObject& p) { handleGetOnlineStatus(p); }}
     };
 }
 
@@ -129,3 +130,22 @@ void ContactHandler::handleGetPendingRequests(const QJsonObject& request) {
     
     emit responseReady(ResponseFactory::getPendingRequestsResponse(true, requestArray));
 }
+
+void ContactHandler::handleGetOnlineStatus(const QJsonObject& request) {
+    QJsonObject payload = request["payload"].toObject();
+    QString username = payload["username"].toString();
+    
+    auto statusList = contactRepo.getFriendListWithStatus(username);
+    contactRepo.updateUserOnlineStatus(username, true);
+    
+    QJsonArray statusArray;
+    for (const auto& [friendName, online] : statusList) {
+        QJsonObject friendStatus;
+        friendStatus["username"] = friendName;
+        friendStatus["online"] = online;
+        statusArray.append(friendStatus);
+    }
+    
+    emit responseReady(ResponseFactory::createOnlineStatusResponse(statusArray));
+}
+

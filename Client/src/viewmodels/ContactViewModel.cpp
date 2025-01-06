@@ -2,11 +2,6 @@
 #include "../controllers/contacts/ContactsController.h"
 #include "../controllers/session/UserManager.h"
 
-ContactViewModel::ContactViewModel(QObject* parent)
-    : QObject(parent)
-{
-}
-
 // =================== UI Actions ===================
 void ContactViewModel::sendFriendRequest(const QString& username) {
     if (m_sentRequests.contains(username)) {
@@ -120,4 +115,24 @@ void ContactViewModel::setSentRequests(const QStringList& sentRequests){
 void ContactViewModel::setReceivedRequests(const QStringList& receivedRequests){
     m_receivedRequests = receivedRequests;
     emit receivedRequestsChanged();
+}
+
+ContactViewModel::ContactViewModel(QObject* parent)
+    : QObject(parent)
+{
+    statusTimer = new QTimer(this);
+    statusTimer->setInterval(5000);
+    connect(statusTimer, &QTimer::timeout, this, &ContactViewModel::fetchOnlineStatuses);
+}
+
+void ContactViewModel::startStatusTimer() {
+    statusTimer->start();
+}
+
+void ContactViewModel::stopStatusTimer() {
+    statusTimer->stop();
+}
+
+void ContactViewModel::fetchOnlineStatuses() {
+    emit contactActionRequested(ContactAction::FetchOnlineStatus, UserManager::instance()->currentUser());
 }

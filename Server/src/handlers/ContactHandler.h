@@ -4,9 +4,9 @@
 
 class ContactHandler : public BaseHandler {
     Q_OBJECT
+
 public:
     explicit ContactHandler(DatabaseManager* db);
-
 private:
     ContactRepository contactRepo;
     void handleSendRequest(const QJsonObject& request);
@@ -17,4 +17,5 @@ private:
     void handleGetFriendList(const QJsonObject& request);
     void handleGetPendingRequests(const QJsonObject& request);
     void handleGetSentRequestList(const QJsonObject& request);
+    void handleGetOnlineStatus(const QJsonObject& request);
 };

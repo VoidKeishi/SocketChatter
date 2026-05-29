@@ -2,4 +2,4 @@ mkdir -p Client/build
 cd Client/build
 cmake ..
 make
-./Client 192.168.103.242 3000 DEBUG
+./Client 127.0.0.1 3000 DEBUG

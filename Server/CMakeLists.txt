@@ -4,8 +4,12 @@ project(Server)
 
 set(CMAKE_CXX_STANDARD 11)
 
-# Set the path to your Qt installation
-set(CMAKE_PREFIX_PATH "$ENV{HOME}/Qt/6.8.1/gcc_64")
+# Set the path to your Qt installation (override with QT_DIR env var or -DCMAKE_PREFIX_PATH)
+if(DEFINED ENV{QT_DIR})
+    set(CMAKE_PREFIX_PATH "$ENV{QT_DIR}")
+elseif(NOT CMAKE_PREFIX_PATH)
+    set(CMAKE_PREFIX_PATH "$ENV{HOME}/Qt/6.8.1/gcc_64")
+endif()
 
 # Enable Qt features
 set(CMAKE_AUTOMOC ON)
